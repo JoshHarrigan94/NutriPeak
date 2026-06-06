@@ -62,4 +62,4 @@ export function calculateMetrics(state) {
     expectedLossKg,
     estimatedDeficit
   };
-}
+} 
