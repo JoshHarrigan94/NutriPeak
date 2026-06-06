@@ -8,7 +8,7 @@ import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
 import { calculateProjection } from "../projections/projectionEngine.js";
 import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { metricCard } from "../ui/cards.js";
-
+import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 function round(value) {
   return Number.isFinite(value) ? value.toFixed(0) : "0";
 }
@@ -58,6 +58,13 @@ export function renderDiagnostics(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const metabolicState = classifyMetabolicState(
+  metrics,
+  diagnostics,
+  investigation,
+  quality,
+  noise
+);
   const projection = calculateProjection(metrics, state);
   const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
 
@@ -149,6 +156,21 @@ export function renderDiagnostics(state) {
       <h2>Most likely cause: ${investigation.primary.title}</h2>
       <p class="note">${investigation.primary.summary}</p>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Metabolic State Classification</p>
+  <h2>${metabolicState.primary.label}</h2>
+  <p class="note">${metabolicState.primary.summary}</p>
+
+  <div class="reason-list">
+    ${metabolicState.ranked.map(state => `
+      <div class="reason-item">
+        <strong>${state.label} · ${state.score.toFixed(0)}%</strong>
+        <span class="note">${state.summary}</span>
+      </div>
+    `).join("")}
+  </div>
+</section>
 
     <section class="card">
       <h2>Cause Breakdown</h2>
