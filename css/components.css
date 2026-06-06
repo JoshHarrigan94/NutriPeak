@@ -265,3 +265,68 @@
   border-color: rgba(23,23,23,.38);
   background: rgba(23,23,23,.06);
 }
+
+.phase-card {
+  border: 1px solid rgba(23,23,23,.18);
+  border-radius: 24px;
+  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,.48),
+    rgba(23,23,23,.035)
+  );
+}
+
+.phase-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.phase-title h3 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -.04em;
+}
+
+.phase-tag {
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.phase-steps {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.phase-step {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 9px;
+  align-items: start;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.phase-step-index {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 900;
+}
