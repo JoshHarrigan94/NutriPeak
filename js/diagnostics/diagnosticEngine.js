@@ -8,16 +8,25 @@ function scoreLabel(score) {
   return "Low";
 }
 
-export function runDiagnostics(metrics) {
+export function runDiagnostics(metrics, efficiencyModel = null) {
   const activeLossSignal =
-    metrics.trendLossPerWeek > 0
-      ? metrics.trendLossPerWeek
-      : metrics.sevenDayLoss;
+  efficiencyModel?.dryAdjustedLossSignal ??
+  (metrics.trendLossPerWeek > 0
+    ? metrics.trendLossPerWeek
+    : metrics.sevenDayLoss);
 
-  const efficiency =
+const rawEfficiency =
+  efficiencyModel?.rawEfficiency ?? (
     metrics.expectedLossKg > 0
       ? clamp((activeLossSignal / metrics.expectedLossKg) * 100)
-      : 0;
+      : 0
+  );
+
+const efficiency =
+  efficiencyModel?.dryAdjustedEfficiency ?? rawEfficiency;
+
+const maskingGap =
+  efficiencyModel?.maskingGap ?? 0;
 
   const deficitPressure =
     metrics.estimatedDeficit > 900 ? 24 :
@@ -61,12 +70,13 @@ export function runDiagnostics(metrics) {
   );
 
   const retentionRisk = clamp(
-    (efficiency < 70 ? 30 : 8) +
-    (metrics.highStepDays >= 4 ? 14 : 0) +
-    (metrics.lowCalorieDays >= 4 ? 10 : 0) +
-    (metrics.highSodiumDays >= 2 ? 10 : 0) +
-    (metrics.highSorenessDays >= 2 ? 10 : 0)
-  );
+  (rawEfficiency < 70 ? 30 : 8) +
+  (maskingGap >= 15 ? 20 : 0) +
+  (metrics.highStepDays >= 4 ? 14 : 0) +
+  (metrics.lowCalorieDays >= 4 ? 10 : 0) +
+  (metrics.highSodiumDays >= 2 ? 10 : 0) +
+  (metrics.highSorenessDays >= 2 ? 10 : 0)
+);
 
   let status = "good";
   let label = "Strategy working";
@@ -84,7 +94,9 @@ export function runDiagnostics(metrics) {
 
   return {
     efficiency,
-    adaptationRisk,
+rawEfficiency,
+maskingGap,
+adaptationRisk,
     retentionRisk,
     fatigueRisk,
     adherenceRisk,
