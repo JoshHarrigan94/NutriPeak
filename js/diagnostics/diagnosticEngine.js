@@ -69,4 +69,4 @@ export function runDiagnostics(metrics) {
     status,
     label
   };
-}
+} 
