@@ -1,6 +1,8 @@
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
+import { getDecision } from "../decisions/decisionEngine.js";
+import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { metricCard } from "../ui/cards.js";
 
 function round(value) {
@@ -47,7 +49,9 @@ function renderInvestigationCard(cause, primaryId) {
 export function renderDiagnostics(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
+  const decision = getDecision(diagnostics, metrics);
   const investigation = investigateStall(metrics, diagnostics);
+  const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
 
   return `
     <section class="card">
@@ -65,6 +69,12 @@ export function renderDiagnostics(state) {
         ${metricCard("Retention / Masking Risk", round(diagnostics.retentionRisk), "%")}
         ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
       </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Phase Recommendation</p>
+      <h2>${phase.title}</h2>
+      <p class="note">${phase.summary}</p>
     </section>
 
     <section class="card">
