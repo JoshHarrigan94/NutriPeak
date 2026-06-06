@@ -4,6 +4,8 @@ import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { calculateDataQuality } from "../quality/dataQualityEngine.js";
+import { renderTrendChart } from "../charts/trendChart.js";
+import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
 
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
@@ -43,6 +45,24 @@ function renderPhaseSteps(phase) {
   `;
 }
 
+function renderNoise(noise) {
+  return `
+    <div class="noise-card">
+      <span class="noise-label">${noise.label}</span>
+      <p class="note">${noise.summary}</p>
+
+      <div class="noise-list">
+        ${noise.drivers.map(driver => `
+          <div class="noise-item">
+            <span>${driver.label}</span>
+            <strong>${driver.value}</strong>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 export function renderReview(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
@@ -50,6 +70,7 @@ export function renderReview(state) {
   const investigation = investigateStall(metrics, diagnostics);
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
+  const noise = analyseScaleNoise(metrics, state.entries);
 
   const adjustedConfidence = Math.round(
     decision.confidence * (0.65 + quality.score / 285)
@@ -70,6 +91,18 @@ export function renderReview(state) {
         Decision confidence: <strong>${pct(adjustedConfidence)}</strong>
         after data-quality adjustment.
       </p>
+    </section>
+
+    <section class="card chart-card">
+      <p class="eyebrow">Trend review</p>
+      <h2>Scale vs signal</h2>
+      ${renderTrendChart(state.entries)}
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Scale-noise check</p>
+      <h2>Should you trust today's weight?</h2>
+      ${renderNoise(noise)}
     </section>
 
     <section class="card">
@@ -110,19 +143,6 @@ export function renderReview(state) {
     </section>
 
     <section class="card">
-      <h2>Why the engine thinks this</h2>
-
-      <div class="reason-list">
-        ${decision.reasons.map(reason => `
-          <div class="reason-item">
-            <strong>${reason.title}</strong>
-            <span class="note">${reason.body}</span>
-          </div>
-        `).join("")}
-      </div>
-    </section>
-
-    <section class="card">
       <h2>Weekly Signal</h2>
 
       <div class="grid">
@@ -153,4 +173,4 @@ export function renderReview(state) {
       <p class="note">${decision.nextCheck}</p>
     </section>
   `;
-} 
+}
