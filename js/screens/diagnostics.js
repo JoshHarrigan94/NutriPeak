@@ -1,3 +1,4 @@
+import { estimateWaterLoad } from "../water/waterLoadEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
@@ -58,7 +59,8 @@ export function renderDiagnostics(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
-  const metabolicState = classifyMetabolicState(
+ const waterLoad = estimateWaterLoad(metrics, state.entries);
+   const metabolicState = classifyMetabolicState(
   metrics,
   diagnostics,
   investigation,
@@ -138,6 +140,30 @@ export function renderDiagnostics(state) {
         `).join("")}
       </div>
     </section>
+
+    <section class="card">
+  <p class="eyebrow">Water-load model</p>
+  <h2>${waterLoad.label}</h2>
+  <p class="note">${waterLoad.summary}</p>
+
+  <div class="grid">
+    ${metricCard("Estimated Water", waterLoad.estimatedWaterLoadKg.toFixed(1), "kg")}
+    ${metricCard("Predicted Dry Weight", waterLoad.predictedDryWeight.toFixed(1), "kg")}
+    ${metricCard("Carb Load", waterLoad.contributors.carbWaterKg.toFixed(1), "kg")}
+    ${metricCard("Sodium Load", waterLoad.contributors.sodiumWaterKg.toFixed(1), "kg")}
+    ${metricCard("Stress Load", waterLoad.contributors.stressWaterKg.toFixed(1), "kg")}
+    ${metricCard("Soreness Load", waterLoad.contributors.sorenessWaterKg.toFixed(1), "kg")}
+  </div>
+
+  <div class="reason-list">
+    ${waterLoad.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
+</section>
 
     <section class="card">
       <p class="eyebrow">Confidence warning</p>
