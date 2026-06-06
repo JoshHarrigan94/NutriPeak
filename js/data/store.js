@@ -76,6 +76,32 @@ export function deleteEntry(id) {
   });
 }
 
+export function saveWeeklyReview(review) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const reviewRecord = {
+    id: crypto.randomUUID(),
+    date: today,
+    ...review,
+    createdAt: new Date().toISOString()
+  };
+
+  commit({
+    ...state,
+    reviews: [
+      reviewRecord,
+      ...(state.reviews || [])
+    ].slice(0, 24)
+  });
+}
+
+export function deleteReview(id) {
+  commit({
+    ...state,
+    reviews: (state.reviews || []).filter(review => review.id !== id)
+  });
+}
+
 export function seedDemoData() {
   const today = new Date();
 
