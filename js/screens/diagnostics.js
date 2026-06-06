@@ -1,229 +1,145 @@
-import { estimateWaterLoad } from "../water/waterLoadEngine.js";
-import { calculateMetrics } from "../metrics/coreMetrics.js";
-import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
-import { investigateStall } from "../investigations/stallInvestigator.js";
-import { getDecision } from "../decisions/decisionEngine.js";
-import { getPhaseRecommendation } from "../phases/phaseEngine.js";
-import { calculateDataQuality } from "../quality/dataQualityEngine.js";
-import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
-import { calculateProjection } from "../projections/projectionEngine.js";
-import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
+import { generateMetabolicReport } from "../engine/metabolicReportEngine.js";
 import { metricCard } from "../ui/cards.js";
-import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
-function round(value) {
-  return Number.isFinite(value) ? value.toFixed(0) : "0";
+
+function round(value, dp = 0) {
+  return Number.isFinite(value) ? value.toFixed(dp) : "0";
 }
 
 function renderEvidence(items) {
-  if (!items.length) {
-    return `
-      <div class="evidence-item">
-        <span class="evidence-dot"></span>
-        <span>No strong evidence detected yet.</span>
-      </div>
-    `;
+  if (!items?.length) {
+    return `<div class="reason-item"><strong>Evidence</strong><span class="note">No strong evidence detected yet.</span></div>`;
   }
 
   return items.map(item => `
-    <div class="evidence-item">
-      <span class="evidence-dot"></span>
-      <span>${item}</span>
+    <div class="reason-item">
+      <strong>Evidence</strong>
+      <span class="note">${item}</span>
     </div>
   `).join("");
 }
 
-function renderInvestigationCard(cause, primaryId) {
-  const isPrimary = cause.id === primaryId;
-
-  return `
-    <article class="investigation-card ${isPrimary ? "primary-cause" : ""}">
-      <header>
-        <h3>${cause.title}</h3>
-        <span class="investigation-score">${round(cause.score)}%</span>
-      </header>
-
-      <p class="note">${cause.summary}</p>
-
-      <div class="evidence-list">
-        ${renderEvidence(cause.evidence)}
-      </div>
-    </article>
-  `;
-}
-
 export function renderDiagnostics(state) {
-  const metrics = calculateMetrics(state);
-  const diagnostics = runDiagnostics(metrics);
-  const decision = getDecision(diagnostics, metrics);
-  const investigation = investigateStall(metrics, diagnostics);
-  const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
-  const quality = calculateDataQuality(state);
-  const noise = analyseScaleNoise(metrics, state.entries);
- const waterLoad = estimateWaterLoad(metrics, state.entries);
-   const metabolicState = classifyMetabolicState(
-  metrics,
-  diagnostics,
-  investigation,
-  quality,
-  noise
-);
-  const projection = calculateProjection(metrics, state);
-  const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
+  const report = generateMetabolicReport(state);
+
+  const {
+    metrics,
+    diagnostics,
+    efficiency,
+    waterLoad,
+    metabolicState,
+    investigation,
+    quality,
+    noise,
+    phase,
+    calorieAdjustment,
+    projection
+  } = report;
 
   return `
     <section class="card">
-      <h2>Diagnostic Layer</h2>
-      
-      <section class="card">
-  <p class="eyebrow">Maintenance model</p>
-  <h2>${metrics.adaptiveMaintenance.label}</h2>
-  <p class="note">${metrics.adaptiveMaintenance.summary}</p>
-
-  <div class="reason-list">
-    ${metrics.adaptiveMaintenance.windows.map(window => `
-      <div class="reason-item">
-        <strong>${window.days}-day window</strong>
-        <span class="note">
-          Avg intake ${window.avgCalories.toFixed(0)} kcal · 
-          weight change ${window.weeklyChange.toFixed(2)}kg/week · 
-          observed maintenance ${window.observedMaintenance.toFixed(0)} kcal
-        </span>
-      </div>
-    `).join("")}
-  </div>
-</section>
-
+      <h2>Diagnostic Engine</h2>
       <p class="note">
-        This engine compares restriction, activity, adherence, macro quality,
-        recovery state, data confidence, scale noise and trend movement.
+        One orchestrated report now runs metrics, maintenance, water load, efficiency,
+        diagnostics, investigation, state classification and recommendations.
       </p>
 
       <div class="diagnostic-strip">
-        ${metricCard("Fat-loss Efficiency", round(diagnostics.efficiency), "%")}
-        ${metricCard("Adaptation Risk", round(diagnostics.adaptationRisk), "%")}
-        ${metricCard("Diet Fatigue Risk", round(diagnostics.fatigueRisk), "%")}
-        ${metricCard("Retention / Masking Risk", round(diagnostics.retentionRisk), "%")}
-        ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
+        ${metricCard("Dry Efficiency", round(diagnostics.efficiency), "%")}
+        ${metricCard("Raw Efficiency", round(diagnostics.rawEfficiency), "%")}
+        ${metricCard("Masking Gap", round(diagnostics.maskingGap), "%")}
+        ${metricCard("Adaptation", round(diagnostics.adaptationRisk), "%")}
+        ${metricCard("Fatigue", round(diagnostics.fatigueRisk), "%")}
+        ${metricCard("Retention", round(diagnostics.retentionRisk), "%")}
         ${metricCard("Data Quality", quality.score, "%")}
       </div>
     </section>
 
     <section class="card">
-      <p class="eyebrow">Adaptive guidance</p>
-      <h2>${adjustment.label}</h2>
-      <p class="note">
-        Suggested target: <strong>${adjustment.targetCalories} kcal</strong>.
-        ${adjustment.summary}
-      </p>
-    </section>
+      <p class="eyebrow">Metabolic State Classification</p>
+      <h2>${metabolicState.primary.label}</h2>
+      <p class="note">${metabolicState.primary.summary}</p>
 
-    <section class="card">
-      <p class="eyebrow">Goal projection</p>
-      <h2>${projection.label}</h2>
-      <p class="note">
-        Projected date: <strong>${projection.projectedDate}</strong>.
-        ${projection.summary}
-      </p>
-    </section>
-
-    <section class="card">
-      <p class="eyebrow">Scale noise interpretation</p>
-      <h2>${noise.label}</h2>
-      <p class="note">${noise.summary}</p>
-
-      <div class="noise-list">
-        ${noise.drivers.map(driver => `
-          <div class="noise-item">
-            <span>${driver.label}</span>
-            <strong>${driver.value}</strong>
+      <div class="reason-list">
+        ${metabolicState.ranked.map(item => `
+          <div class="reason-item">
+            <strong>${item.label} · ${round(item.score)}%</strong>
+            <span class="note">${item.summary}</span>
           </div>
         `).join("")}
       </div>
     </section>
 
     <section class="card">
-  <p class="eyebrow">Water-load model</p>
-  <h2>${waterLoad.label}</h2>
-  <p class="note">${waterLoad.summary}</p>
+      <p class="eyebrow">Adaptive maintenance</p>
+      <h2>${metrics.adaptiveMaintenance.label}</h2>
+      <p class="note">${metrics.adaptiveMaintenance.summary}</p>
 
-  <div class="grid">
-    ${metricCard("Estimated Water", waterLoad.estimatedWaterLoadKg.toFixed(1), "kg")}
-    ${metricCard("Predicted Dry Weight", waterLoad.predictedDryWeight.toFixed(1), "kg")}
-    ${metricCard("Carb Load", waterLoad.contributors.carbWaterKg.toFixed(1), "kg")}
-    ${metricCard("Sodium Load", waterLoad.contributors.sodiumWaterKg.toFixed(1), "kg")}
-    ${metricCard("Stress Load", waterLoad.contributors.stressWaterKg.toFixed(1), "kg")}
-    ${metricCard("Soreness Load", waterLoad.contributors.sorenessWaterKg.toFixed(1), "kg")}
-  </div>
-
-  <div class="reason-list">
-    ${waterLoad.evidence.map(item => `
-      <div class="reason-item">
-        <strong>Evidence</strong>
-        <span class="note">${item}</span>
+      <div class="reason-list">
+        ${metrics.adaptiveMaintenance.windows.map(window => `
+          <div class="reason-item">
+            <strong>${window.days}-day window</strong>
+            <span class="note">
+              Avg intake ${round(window.avgCalories)} kcal ·
+              weight change ${round(window.weeklyChange, 2)}kg/week ·
+              observed maintenance ${round(window.observedMaintenance)} kcal
+            </span>
+          </div>
+        `).join("") || `<div class="reason-item"><strong>Window</strong><span class="note">More data needed.</span></div>`}
       </div>
-    `).join("")}
-  </div>
-</section>
-
-    <section class="card">
-      <p class="eyebrow">Confidence warning</p>
-      <h2>${quality.label}</h2>
-      <p class="note">
-        ${
-          quality.score < 65
-            ? "The diagnostic read may be unstable. Improve today’s check-in completeness before trusting major decisions."
-            : "The diagnostic read has enough data quality to be useful."
-        }
-      </p>
     </section>
 
     <section class="card">
-      <p class="eyebrow">Phase Recommendation</p>
-      <h2>${phase.title}</h2>
-      <p class="note">${phase.summary}</p>
-    </section>
-
-    <section class="card">
-      <h2>Nutrition & Recovery Signal</h2>
-
+      <p class="eyebrow">Water-load model</p>
+      <h2>${waterLoad.label}</h2>
+      <p class="note">${waterLoad.summary}</p>
       <div class="grid">
-        ${metricCard("Protein Target", round(metrics.proteinTarget), "g")}
-        ${metricCard("Low Protein Days", metrics.lowProteinDays, "")}
-        ${metricCard("Low Fibre Days", metrics.lowFibreDays, "")}
-        ${metricCard("High Sodium Days", metrics.highSodiumDays, "")}
-        ${metricCard("Low Sleep Days", metrics.lowSleepDays, "")}
-        ${metricCard("High Stress Days", metrics.highStressDays, "")}
+        ${metricCard("Estimated Water", round(waterLoad.estimatedWaterLoadKg, 1), "kg")}
+        ${metricCard("Predicted Dry", round(waterLoad.predictedDryWeight, 1), "kg")}
+        ${metricCard("Carb Load", round(waterLoad.contributors.carbWaterKg, 1), "kg")}
+        ${metricCard("Sodium Load", round(waterLoad.contributors.sodiumWaterKg, 1), "kg")}
+      </div>
+      <div class="reason-list">${renderEvidence(waterLoad.evidence)}</div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Efficiency model</p>
+      <h2>${efficiency.label}</h2>
+      <p class="note">${efficiency.summary}</p>
+      <div class="grid">
+        ${metricCard("Raw Eff", round(efficiency.rawEfficiency), "%")}
+        ${metricCard("Dry Eff", round(efficiency.dryAdjustedEfficiency), "%")}
+        ${metricCard("Dry Adj", round(efficiency.dryWeightAdjustment, 1), "kg")}
+        ${metricCard("Loss Signal", round(efficiency.dryAdjustedLossSignal, 2), "kg/wk")}
       </div>
     </section>
 
     <section class="card">
-      <p class="eyebrow">Stall Investigation</p>
-      <h2>Most likely cause: ${investigation.primary.title}</h2>
+      <p class="eyebrow">Stall investigation</p>
+      <h2>${investigation.primary.title}</h2>
       <p class="note">${investigation.primary.summary}</p>
-    </section>
-    
-    <section class="card">
-  <p class="eyebrow">Metabolic State Classification</p>
-  <h2>${metabolicState.primary.label}</h2>
-  <p class="note">${metabolicState.primary.summary}</p>
-
-  <div class="reason-list">
-    ${metabolicState.ranked.map(state => `
-      <div class="reason-item">
-        <strong>${state.label} · ${state.score.toFixed(0)}%</strong>
-        <span class="note">${state.summary}</span>
-      </div>
-    `).join("")}
-  </div>
-</section>
-
-    <section class="card">
-      <h2>Cause Breakdown</h2>
 
       <div class="investigation-grid">
-        ${investigation.causes.map(cause =>
-          renderInvestigationCard(cause, investigation.primary.id)
-        ).join("")}
+        ${investigation.causes.map(cause => `
+          <article class="investigation-card ${cause.id === investigation.primary.id ? "primary-cause" : ""}">
+            <header>
+              <h3>${cause.title}</h3>
+              <span class="investigation-score">${round(cause.score)}%</span>
+            </header>
+            <p class="note">${cause.summary}</p>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Action layer</p>
+      <h2>${calorieAdjustment.label}</h2>
+      <p class="note">${calorieAdjustment.summary}</p>
+      <div class="grid">
+        ${metricCard("Target", calorieAdjustment.targetCalories, " kcal")}
+        ${metricCard("Phase", phase.title, "")}
+        ${metricCard("Projection", projection.projectedDate, "")}
+        ${metricCard("Scale Noise", noise.label, "")}
       </div>
     </section>
   `;
