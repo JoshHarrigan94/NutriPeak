@@ -45,13 +45,13 @@ export function getDecision(diagnostics, metrics) {
   if (
     diagnostics.efficiency < 45 &&
     diagnostics.fatigueRisk >= 55 &&
-    metrics.avgCalories < 2600 &&
-    metrics.avgSteps > 10000
+    metrics.estimatedDeficit >= 700 &&
+metrics.avgSteps > 10000
   ) {
     reasons.push({
       title: "Low output despite high pressure",
       body:
-        "Calories are low, steps are high, but the scale is not moving as expected."
+        "Estimated deficit is large, steps are high, but the scale is not moving as expected."
     });
 
     reasons.push({
