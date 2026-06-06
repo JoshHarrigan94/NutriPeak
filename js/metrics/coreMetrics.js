@@ -1,11 +1,8 @@
 import { estimateAdaptiveMaintenance } from "../maintenance/maintenanceEngine.js";
+
 function average(values) {
-  const clean = values.filter(value =>
-    Number.isFinite(value) && value > 0
-  );
-
+  const clean = values.filter(value => Number.isFinite(value) && value > 0);
   if (!clean.length) return 0;
-
   return clean.reduce((sum, value) => sum + value, 0) / clean.length;
 }
 
@@ -19,7 +16,6 @@ function getWeightEntries(entries) {
 
 function calculateSlope(entries) {
   const weightEntries = getWeightEntries(entries);
-
   if (weightEntries.length < 2) return 0;
 
   const first = weightEntries[0];
@@ -47,6 +43,8 @@ export function calculateMetrics(state) {
   const last14 = entries.slice(-14);
   const previous7 = entries.slice(-14, -7);
   const last28 = entries.slice(-28);
+
+  const daysLogged = new Set(entries.map(entry => entry.date)).size;
 
   const avgCalories = average(last7.map(entry => entry.calories));
   const avgProtein = average(last7.map(entry => entry.protein));
@@ -84,38 +82,32 @@ export function calculateMetrics(state) {
   const longTrendLossPerWeek = calculateSlope(last28);
 
   const adaptiveMaintenance = estimateAdaptiveMaintenance(state, {
-  daysLogged,
-  avgCalories
-});
+    daysLogged,
+    avgCalories
+  });
 
-const effectiveTdee =
-  adaptiveMaintenance.available
-    ? adaptiveMaintenance.estimatedMaintenance
-    : state.user.estimatedTdee;
+  const effectiveTdee =
+    adaptiveMaintenance.available
+      ? adaptiveMaintenance.estimatedMaintenance
+      : state.user.estimatedTdee;
 
-const estimatedDeficit = Math.max(
-  0,
-  effectiveTdee - avgCalories
-);
+  const estimatedDeficit = Math.max(0, effectiveTdee - avgCalories);
 
-const expectedLossKg =
-  estimatedDeficit > 0
-    ? (estimatedDeficit * 7) / 7700
-    : state.user.targetRateKgPerWeek;
+  const expectedLossKg =
+    estimatedDeficit > 0
+      ? (estimatedDeficit * 7) / 7700
+      : state.user.targetRateKgPerWeek;
 
-const weeklyCalorieDeficit = Math.max(
-  0,
-  sum(last7.map(entry => effectiveTdee - entry.calories))
-);
+  const weeklyCalorieDeficit = Math.max(
+    0,
+    sum(last7.map(entry => effectiveTdee - entry.calories))
+  );
 
   const totalLoss = firstWeight - latestWeight;
   const remainingLoss = Math.max(0, latestWeight - state.user.goalWeightKg);
 
-  const daysLogged = new Set(entries.map(entry => entry.date)).size;
-
   const lowCalorieDays = countWhere(last7, entry =>
-    entry.calories > 0 &&
-    entry.calories < state.user.minimumCalories
+    entry.calories > 0 && entry.calories < state.user.minimumCalories
   );
 
   const highStepDays = countWhere(last7, entry =>
@@ -123,38 +115,23 @@ const weeklyCalorieDeficit = Math.max(
   );
 
   const lowSleepDays = countWhere(last7, entry =>
-    entry.sleepHours > 0 &&
-    entry.sleepHours < 6.5
+    entry.sleepHours > 0 && entry.sleepHours < 6.5
   );
 
-  const highStressDays = countWhere(last7, entry =>
-    entry.stress >= 7
-  );
-
-  const highSorenessDays = countWhere(last7, entry =>
-    entry.soreness >= 7
-  );
+  const highStressDays = countWhere(last7, entry => entry.stress >= 7);
+  const highSorenessDays = countWhere(last7, entry => entry.soreness >= 7);
 
   const lowFibreDays = countWhere(last7, entry =>
-    entry.fibre > 0 &&
-    entry.fibre < 20
+    entry.fibre > 0 && entry.fibre < 20
   );
 
-  const highSodiumDays = countWhere(last7, entry =>
-    entry.sodium >= 3500
-  );
+  const highSodiumDays = countWhere(last7, entry => entry.sodium >= 3500);
 
   const proteinTarget = Math.max(160, latestWeight * 1.8);
 
   const lowProteinDays = countWhere(last7, entry =>
-    entry.protein > 0 &&
-    entry.protein < proteinTarget
+    entry.protein > 0 && entry.protein < proteinTarget
   );
-  
-  const adaptiveMaintenance = estimateAdaptiveMaintenance(state, {
-  daysLogged,
-  avgCalories
-});
 
   return {
     entryCount: entries.length,
@@ -166,11 +143,9 @@ const weeklyCalorieDeficit = Math.max(
     avgFat,
     avgFibre,
     avgSodium,
-
     avgSleep,
     avgStress,
     avgSoreness,
-
     avgSteps,
     avgAdherence,
 
@@ -181,9 +156,13 @@ const weeklyCalorieDeficit = Math.max(
     sevenDayLoss,
     trendLossPerWeek,
     longTrendLossPerWeek,
-    expectedLossKg,
+
+    adaptiveMaintenance,
+    effectiveTdee,
     estimatedDeficit,
+    expectedLossKg,
     weeklyCalorieDeficit,
+
     totalLoss,
     remainingLoss,
 
@@ -196,8 +175,5 @@ const weeklyCalorieDeficit = Math.max(
     highSorenessDays,
     lowFibreDays,
     highSodiumDays
-    
-    adaptiveMaintenance,
-effectiveTdee: adaptiveMaintenance.estimatedMaintenance || state.user.estimatedTdee,
   };
 }
