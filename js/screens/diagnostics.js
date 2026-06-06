@@ -1,22 +1,61 @@
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
+import { investigateStall } from "../investigations/stallInvestigator.js";
 import { metricCard } from "../ui/cards.js";
 
 function round(value) {
   return Number.isFinite(value) ? value.toFixed(0) : "0";
 }
 
+function renderEvidence(items) {
+  if (!items.length) {
+    return `
+      <div class="evidence-item">
+        <span class="evidence-dot"></span>
+        <span>No strong evidence detected yet.</span>
+      </div>
+    `;
+  }
+
+  return items.map(item => `
+    <div class="evidence-item">
+      <span class="evidence-dot"></span>
+      <span>${item}</span>
+    </div>
+  `).join("");
+}
+
+function renderInvestigationCard(cause, primaryId) {
+  const isPrimary = cause.id === primaryId;
+
+  return `
+    <article class="investigation-card ${isPrimary ? "primary-cause" : ""}">
+      <header>
+        <h3>${cause.title}</h3>
+        <span class="investigation-score">${round(cause.score)}%</span>
+      </header>
+
+      <p class="note">${cause.summary}</p>
+
+      <div class="evidence-list">
+        ${renderEvidence(cause.evidence)}
+      </div>
+    </article>
+  `;
+}
+
 export function renderDiagnostics(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
+  const investigation = investigateStall(metrics, diagnostics);
 
   return `
     <section class="card">
       <h2>Diagnostic Layer</h2>
 
       <p class="note">
-        This engine infers what may be happening under the hood by comparing restriction,
-        activity, adherence and actual trend movement.
+        This engine compares restriction, activity, adherence and trend movement to explain
+        whether fat loss is efficient, masked, drifting, or under too much pressure.
       </p>
 
       <div class="diagnostic-strip">
@@ -29,36 +68,18 @@ export function renderDiagnostics(state) {
     </section>
 
     <section class="card">
-      <h2>Interpretation</h2>
+      <p class="eyebrow">Stall Investigation</p>
+      <h2>Most likely cause: ${investigation.primary.title}</h2>
+      <p class="note">${investigation.primary.summary}</p>
+    </section>
 
-      <div class="reason-list">
-        <div class="reason-item">
-          <strong>Adaptation: ${diagnostics.labels.adaptation}</strong>
-          <span class="note">
-            Pressure from low calories, high steps and low output versus expectation.
-          </span>
-        </div>
+    <section class="card">
+      <h2>Cause Breakdown</h2>
 
-        <div class="reason-item">
-          <strong>Fatigue: ${diagnostics.labels.fatigue}</strong>
-          <span class="note">
-            Pressure from restriction load, activity load, adherence decline and diet duration.
-          </span>
-        </div>
-
-        <div class="reason-item">
-          <strong>Retention / Masking: ${diagnostics.labels.retention}</strong>
-          <span class="note">
-            Possible water, glycogen, inflammation or stress masking actual fat loss.
-          </span>
-        </div>
-
-        <div class="reason-item">
-          <strong>Adherence Risk: ${diagnostics.labels.adherence}</strong>
-          <span class="note">
-            Difference between intended execution and recorded adherence.
-          </span>
-        </div>
+      <div class="investigation-grid">
+        ${investigation.causes.map(cause =>
+          renderInvestigationCard(cause, investigation.primary.id)
+        ).join("")}
       </div>
     </section>
   `;
