@@ -1,6 +1,7 @@
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
+import { investigateStall } from "../investigations/stallInvestigator.js";
 
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
@@ -10,10 +11,28 @@ function num(value, dp = 0) {
   return Number.isFinite(value) ? value.toFixed(dp) : "0";
 }
 
+function evidenceList(items) {
+  if (!items.length) {
+    return `<p class="note">No strong evidence detected yet.</p>`;
+  }
+
+  return `
+    <div class="evidence-list">
+      ${items.map(item => `
+        <div class="evidence-item">
+          <span class="evidence-dot"></span>
+          <span>${item}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 export function renderReview(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
   const decision = getDecision(diagnostics, metrics);
+  const investigation = investigateStall(metrics, diagnostics);
 
   return `
     <section class="card decision-card">
@@ -29,6 +48,13 @@ export function renderReview(state) {
       <p class="note">
         Decision confidence: <strong>${pct(decision.confidence)}</strong>
       </p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Primary investigation result</p>
+      <h2>${investigation.primary.title}</h2>
+      <p class="note">${investigation.primary.summary}</p>
+      ${evidenceList(investigation.primary.evidence)}
     </section>
 
     <section class="card">
