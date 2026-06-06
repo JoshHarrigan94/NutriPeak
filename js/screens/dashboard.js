@@ -1,3 +1,4 @@
+import { estimateWaterLoad } from "../water/waterLoadEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getRecommendation } from "../recommendations/recommendationEngine.js";
@@ -126,7 +127,8 @@ export function renderDashboard(state) {
   const recommendation = getRecommendation(diagnostics, metrics);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
- const metabolicState = classifyMetabolicState(
+ const waterLoad = estimateWaterLoad(metrics, state.entries);
+const metabolicState = classifyMetabolicState(
   metrics,
   diagnostics,
   investigation,
@@ -167,7 +169,17 @@ export function renderDashboard(state) {
     </section>
 
     ${renderScaleNoise(noise)}
-
+    <section class="card">
+  <p class="eyebrow">Dry weight estimate</p>
+  <h2>${waterLoad.label}</h2>
+  <div class="grid">
+    ${metricCard("Scale Weight", waterLoad.latestWeight.toFixed(1), "kg")}
+    ${metricCard("Water Load", waterLoad.estimatedWaterLoadKg.toFixed(1), "kg")}
+    ${metricCard("Dry Weight", waterLoad.predictedDryWeight.toFixed(1), "kg")}
+    ${metricCard("Above Trend", waterLoad.scaleAboveTrend.toFixed(1), "kg")}
+  </div>
+  <p class="note">${waterLoad.summary}</p>
+</section>
     <section class="card">
       <p class="eyebrow">Data confidence</p>
       <h2>${quality.label}</h2>
