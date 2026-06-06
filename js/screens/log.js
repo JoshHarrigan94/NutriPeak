@@ -78,4 +78,4 @@ export function bindLogEvents() {
       deleteEntry(button.dataset.delete);
     });
   });
-}
+} 
