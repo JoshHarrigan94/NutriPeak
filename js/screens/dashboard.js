@@ -11,7 +11,7 @@ import { calculateProjection } from "../projections/projectionEngine.js";
 import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { analyseReviewHistory } from "../history/reviewHistory.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
-
+import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 function round(value, dp = 0) {
   return Number.isFinite(value) ? value.toFixed(dp) : "0";
 }
@@ -126,7 +126,14 @@ export function renderDashboard(state) {
   const recommendation = getRecommendation(diagnostics, metrics);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
-  const projection = calculateProjection(metrics, state);
+ const metabolicState = classifyMetabolicState(
+  metrics,
+  diagnostics,
+  investigation,
+  quality,
+  noise
+);
+   const projection = calculateProjection(metrics, state);
   const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
   const pattern = analyseReviewHistory(state.reviews);
 
@@ -138,6 +145,16 @@ export function renderDashboard(state) {
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Metabolic state</p>
+  <h2>${metabolicState.primary.label}</h2>
+  <p class="note">${metabolicState.primary.summary}</p>
+  <p class="note">
+    Confidence: <strong>${metabolicState.confidence}</strong>.
+    Secondary state: <strong>${metabolicState.secondary.label}</strong>.
+  </p>
+</section>
 
     ${renderHistoryPattern(pattern)}
     ${renderCalories(adjustment)}
