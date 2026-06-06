@@ -85,7 +85,7 @@ export function calculateMetrics(state) {
 
   const estimatedDeficit = Math.max(
     0,
-    state.user.estimatedTdee - avgCalories
+    (state.user.estimatedTdee || 0) - avgCalories
   );
 
   const expectedLossKg =
@@ -140,6 +140,11 @@ export function calculateMetrics(state) {
     0,
     sum(last7.map(entry => state.user.estimatedTdee - entry.calories))
   );
+  
+  const adaptiveMaintenance = estimateAdaptiveMaintenance(state, {
+  daysLogged,
+  avgCalories
+});
 
   return {
     entryCount: entries.length,
@@ -181,5 +186,8 @@ export function calculateMetrics(state) {
     highSorenessDays,
     lowFibreDays,
     highSodiumDays
+    
+    adaptiveMaintenance,
+effectiveTdee: adaptiveMaintenance.estimatedMaintenance || state.user.estimatedTdee,
   };
 }
