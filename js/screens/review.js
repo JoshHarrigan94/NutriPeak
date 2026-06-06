@@ -282,6 +282,34 @@ export function renderReview(state) {
 
     <section class="card">
       <h2>Weekly Signal</h2>
+      
+      <section class="card">
+  <p class="eyebrow">Adaptive maintenance</p>
+  <h2>${metrics.adaptiveMaintenance.label}</h2>
+  <p class="note">${metrics.adaptiveMaintenance.summary}</p>
+
+  <div class="grid">
+    <div class="metric">
+      <span>Observed</span>
+      <strong>${metrics.adaptiveMaintenance.estimatedMaintenance}</strong>
+    </div>
+
+    <div class="metric">
+      <span>Original</span>
+      <strong>${metrics.adaptiveMaintenance.userEstimatedTdee}</strong>
+    </div>
+
+    <div class="metric">
+      <span>Delta</span>
+      <strong>${metrics.adaptiveMaintenance.delta}</strong>
+    </div>
+
+    <div class="metric">
+      <span>Confidence</span>
+      <strong>${metrics.adaptiveMaintenance.confidence}</strong>
+    </div>
+  </div>
+</section>
 
       <div class="grid">
         <div class="metric">
