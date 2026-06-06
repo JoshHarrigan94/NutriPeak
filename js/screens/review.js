@@ -1,3 +1,4 @@
+import { estimateWaterLoad } from "../water/waterLoadEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
@@ -128,6 +129,7 @@ export function renderReview(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const waterLoad = estimateWaterLoad(metrics, state.entries);
   const metabolicState = classifyMetabolicState(
   metrics,
   diagnostics,
@@ -242,6 +244,34 @@ export function renderReview(state) {
       <h2>Should you trust today's weight?</h2>
       ${renderNoise(noise)}
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Dry weight estimate</p>
+  <h2>${waterLoad.label}</h2>
+  <p class="note">${waterLoad.summary}</p>
+
+  <div class="grid">
+    <div class="metric">
+      <span>Scale</span>
+      <strong>${waterLoad.latestWeight.toFixed(1)}kg</strong>
+    </div>
+
+    <div class="metric">
+      <span>Water</span>
+      <strong>${waterLoad.estimatedWaterLoadKg.toFixed(1)}kg</strong>
+    </div>
+
+    <div class="metric">
+      <span>Dry</span>
+      <strong>${waterLoad.predictedDryWeight.toFixed(1)}kg</strong>
+    </div>
+
+    <div class="metric">
+      <span>Above Trend</span>
+      <strong>${waterLoad.scaleAboveTrend.toFixed(1)}kg</strong>
+    </div>
+  </div>
+</section>
 
     <section class="card">
       <p class="eyebrow">Data confidence</p>
