@@ -54,8 +54,8 @@ export function renderDiagnostics(state) {
       <h2>Diagnostic Layer</h2>
 
       <p class="note">
-        This engine compares restriction, activity, adherence and trend movement to explain
-        whether fat loss is efficient, masked, drifting, or under too much pressure.
+        This engine compares restriction, activity, adherence, macro quality,
+        recovery state and trend movement.
       </p>
 
       <div class="diagnostic-strip">
@@ -64,6 +64,19 @@ export function renderDiagnostics(state) {
         ${metricCard("Diet Fatigue Risk", round(diagnostics.fatigueRisk), "%")}
         ${metricCard("Retention / Masking Risk", round(diagnostics.retentionRisk), "%")}
         ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Nutrition & Recovery Signal</h2>
+
+      <div class="grid">
+        ${metricCard("Protein Target", round(metrics.proteinTarget), "g")}
+        ${metricCard("Low Protein Days", metrics.lowProteinDays, "")}
+        ${metricCard("Low Fibre Days", metrics.lowFibreDays, "")}
+        ${metricCard("High Sodium Days", metrics.highSodiumDays, "")}
+        ${metricCard("Low Sleep Days", metrics.lowSleepDays, "")}
+        ${metricCard("High Stress Days", metrics.highStressDays, "")}
       </div>
     </section>
 
