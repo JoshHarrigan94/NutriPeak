@@ -153,4 +153,4 @@ export function renderReview(state) {
       <p class="note">${decision.nextCheck}</p>
     </section>
   `;
-}
+} 
