@@ -1,6 +1,7 @@
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getRecommendation } from "../recommendations/recommendationEngine.js";
+import { getDecision } from "../decisions/decisionEngine.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
@@ -10,13 +11,21 @@ function round(value, dp = 0) {
 export function renderDashboard(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
+  const decision = getDecision(diagnostics, metrics);
   const recommendation = getRecommendation(diagnostics, metrics);
 
   return `
+    <section class="card decision-card">
+      <span class="decision-label">${decision.label}</span>
+      <p class="eyebrow">Current decision</p>
+      <div class="review-action">${decision.action}</div>
+      ${diagnosticPill(diagnostics)}
+      <p class="note">${decision.summary}</p>
+    </section>
+
     <section class="card">
       <p class="eyebrow">Current metabolic signal</p>
       <div class="hero-score">${round(diagnostics.efficiency)}%</div>
-      ${diagnosticPill(diagnostics)}
       <p class="note">
         ${state.user.name || "Athlete"}, your current trend loss is 
         <strong>${round(diagnostics.activeLossSignal, 2)}kg/week</strong> against an expected 
