@@ -3,6 +3,7 @@ import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
 import { getDecision } from "../decisions/decisionEngine.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
+import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 import { metricCard } from "../ui/cards.js";
 
 function round(value) {
@@ -52,6 +53,7 @@ export function renderDiagnostics(state) {
   const decision = getDecision(diagnostics, metrics);
   const investigation = investigateStall(metrics, diagnostics);
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
+  const quality = calculateDataQuality(state);
 
   return `
     <section class="card">
@@ -68,7 +70,20 @@ export function renderDiagnostics(state) {
         ${metricCard("Diet Fatigue Risk", round(diagnostics.fatigueRisk), "%")}
         ${metricCard("Retention / Masking Risk", round(diagnostics.retentionRisk), "%")}
         ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
+        ${metricCard("Data Quality", quality.score, "%")}
       </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Confidence warning</p>
+      <h2>${quality.label}</h2>
+      <p class="note">
+        ${
+          quality.score < 65
+            ? "The diagnostic read may be unstable. Improve today’s check-in completeness before trusting major decisions."
+            : "The diagnostic read has enough data quality to be useful."
+        }
+      </p>
     </section>
 
     <section class="card">
