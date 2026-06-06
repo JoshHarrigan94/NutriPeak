@@ -21,12 +21,18 @@ function commit(nextState) {
   listeners.forEach(fn => fn(state));
 }
 
-export function upsertUser(patch) {
+export function updateUserSettings(settings) {
   commit({
     ...state,
     user: {
       ...state.user,
-      ...patch
+      name: settings.name || "Athlete",
+      startWeightKg: Number(settings.startWeightKg || 0),
+      goalWeightKg: Number(settings.goalWeightKg || 0),
+      targetRateKgPerWeek: Number(settings.targetRateKgPerWeek || 0),
+      estimatedTdee: Number(settings.estimatedTdee || 0),
+      minimumCalories: Number(settings.minimumCalories || 0),
+      highStepThreshold: Number(settings.highStepThreshold || 0)
     }
   });
 }
@@ -39,6 +45,7 @@ export function addEntry(entry) {
     weightKg: Number(entry.weightKg || 0),
     steps: Number(entry.steps || 0),
     adherence: Number(entry.adherence || 100),
+    notes: entry.notes || "",
     createdAt: new Date().toISOString()
   };
 
@@ -60,22 +67,23 @@ export function deleteEntry(id) {
 export function seedDemoData() {
   const today = new Date();
 
-  const entries = Array.from({ length: 21 }, (_, index) => {
+  const entries = Array.from({ length: 28 }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() - (20 - index));
+    date.setDate(today.getDate() - (27 - index));
 
     const weightDrift =
       101 -
-      index * 0.055 +
-      Math.sin(index / 2) * 0.18;
+      index * 0.052 +
+      Math.sin(index / 2) * 0.22;
 
     return {
       id: crypto.randomUUID(),
       date: date.toISOString().slice(0, 10),
-      calories: Math.round(2550 + Math.sin(index) * 180),
+      calories: Math.round(2500 + Math.sin(index) * 160),
       weightKg: Number(weightDrift.toFixed(2)),
-      steps: Math.round(10500 + Math.cos(index / 1.7) * 2200),
-      adherence: index % 7 === 5 ? 78 : 92,
+      steps: Math.round(10800 + Math.cos(index / 1.7) * 2600),
+      adherence: index % 8 === 5 ? 78 : 93,
+      notes: "",
       createdAt: new Date().toISOString()
     };
   });
