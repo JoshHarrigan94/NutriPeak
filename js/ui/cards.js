@@ -13,4 +13,4 @@ export function diagnosticPill(diagnostics) {
       ${diagnostics.label}
     </span>
   `;
-}
+} 
