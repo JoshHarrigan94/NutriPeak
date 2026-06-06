@@ -41,6 +41,18 @@ export function investigateStall(metrics, diagnostics) {
   );
 
   addEvidence(
+    metrics.lowSleepDays >= 3,
+    adaptationEvidence,
+    "Sleep is repeatedly low, which can worsen hunger, recovery and water retention."
+  );
+
+  addEvidence(
+    metrics.highStressDays >= 3,
+    adaptationEvidence,
+    "Stress is repeatedly high, increasing the chance of poor recovery and masking."
+  );
+
+  addEvidence(
     isLowOutput,
     adaptationEvidence,
     "Actual trend loss is below expected loss."
@@ -50,6 +62,8 @@ export function investigateStall(metrics, diagnostics) {
     (isVeryLowOutput ? 34 : isLowOutput ? 22 : 4) +
     metrics.lowCalorieDays * 8 +
     metrics.highStepDays * 6 +
+    metrics.lowSleepDays * 5 +
+    metrics.highStressDays * 5 +
     (metrics.daysLogged >= 21 ? 10 : 0);
 
   const retentionEvidence = [];
@@ -67,6 +81,24 @@ export function investigateStall(metrics, diagnostics) {
   );
 
   addEvidence(
+    metrics.highSorenessDays >= 2,
+    retentionEvidence,
+    "Soreness is high enough to suggest inflammation-related water holding."
+  );
+
+  addEvidence(
+    metrics.highSodiumDays >= 2,
+    retentionEvidence,
+    "Sodium is high enough on multiple days to increase short-term scale noise."
+  );
+
+  addEvidence(
+    metrics.avgCarbs > 300,
+    retentionEvidence,
+    "Carbohydrate intake is high enough to create glycogen-linked water fluctuation."
+  );
+
+  addEvidence(
     metrics.lowCalorieDays >= 4,
     retentionEvidence,
     "Low intake can increase stress pressure and transient water holding."
@@ -81,6 +113,9 @@ export function investigateStall(metrics, diagnostics) {
   const retentionScore =
     (isLowOutput ? 30 : 8) +
     (metrics.highStepDays >= 4 ? 18 : 0) +
+    (metrics.highSorenessDays >= 2 ? 14 : 0) +
+    (metrics.highSodiumDays >= 2 ? 12 : 0) +
+    (metrics.avgCarbs > 300 ? 8 : 0) +
     (metrics.lowCalorieDays >= 4 ? 12 : 0) +
     (diagnostics.fatigueRisk < 65 ? 10 : 0);
 
@@ -99,6 +134,18 @@ export function investigateStall(metrics, diagnostics) {
   );
 
   addEvidence(
+    metrics.lowProteinDays >= 3,
+    adherenceEvidence,
+    "Protein is below target on multiple days, which can make the diet harder to sustain."
+  );
+
+  addEvidence(
+    metrics.lowFibreDays >= 3,
+    adherenceEvidence,
+    "Fibre is low on multiple days, which may reduce fullness and diet quality."
+  );
+
+  addEvidence(
     isLowOutput,
     adherenceEvidence,
     "Expected and actual progress are not aligned."
@@ -107,7 +154,41 @@ export function investigateStall(metrics, diagnostics) {
   const adherenceScore =
     (100 - metrics.avgAdherence) +
     (metrics.avgAdherence < 90 && isLowOutput ? 20 : 0) +
-    (metrics.avgAdherence < 80 ? 18 : 0);
+    (metrics.avgAdherence < 80 ? 18 : 0) +
+    (metrics.lowProteinDays >= 3 ? 10 : 0) +
+    (metrics.lowFibreDays >= 3 ? 8 : 0);
+
+  const nutrientEvidence = [];
+
+  addEvidence(
+    metrics.lowProteinDays >= 3,
+    nutrientEvidence,
+    `Protein is below target on ${metrics.lowProteinDays} recent days.`
+  );
+
+  addEvidence(
+    metrics.lowFibreDays >= 3,
+    nutrientEvidence,
+    `Fibre is below 20g on ${metrics.lowFibreDays} recent days.`
+  );
+
+  addEvidence(
+    metrics.avgFat < 45 && metrics.avgFat > 0,
+    nutrientEvidence,
+    "Average fat intake is very low, which may affect satiety and diet comfort."
+  );
+
+  addEvidence(
+    metrics.avgCarbs < 120 && metrics.avgCarbs > 0,
+    nutrientEvidence,
+    "Average carbohydrate intake is very low, which may affect training output."
+  );
+
+  const nutrientScore =
+    (metrics.lowProteinDays >= 3 ? 28 : 0) +
+    (metrics.lowFibreDays >= 3 ? 22 : 0) +
+    (metrics.avgFat < 45 && metrics.avgFat > 0 ? 18 : 0) +
+    (metrics.avgCarbs < 120 && metrics.avgCarbs > 0 ? 16 : 0);
 
   const dataEvidence = [];
 
@@ -158,6 +239,14 @@ export function investigateStall(metrics, diagnostics) {
       summary:
         "The plan may be sound, but execution quality may explain the gap.",
       evidence: adherenceEvidence
+    }),
+    createCause({
+      id: "nutrients",
+      title: "Nutrient Quality",
+      score: nutrientScore,
+      summary:
+        "Macro and nutrient quality may be making the deficit harder to sustain or recover from.",
+      evidence: nutrientEvidence
     }),
     createCause({
       id: "data",
