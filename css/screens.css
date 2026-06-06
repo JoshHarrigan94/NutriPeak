@@ -14,3 +14,15 @@
   border-left: 4px solid var(--ink);
   padding-left: 14px;
 }
+
+.review-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.review-action {
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -.06em;
+  margin: 4px 0 10px;
+}
