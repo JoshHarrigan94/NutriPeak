@@ -13,21 +13,33 @@ export function buildReviewSnapshot({
     decisionLabel: decision.label,
     decisionState: decision.state,
     decisionAction: decision.action,
+
     phaseTitle: phase.title,
     phaseTag: phase.tag,
+
     primaryCause: investigation.primary.title,
     primaryCauseId: investigation.primary.id,
+
     efficiency: Math.round(diagnostics.efficiency),
+    rawEfficiency: Math.round(diagnostics.rawEfficiency || diagnostics.efficiency),
+    maskingGap: Math.round(diagnostics.maskingGap || 0),
+
     fatigueRisk: Math.round(diagnostics.fatigueRisk),
     adaptationRisk: Math.round(diagnostics.adaptationRisk),
     retentionRisk: Math.round(diagnostics.retentionRisk),
+
     dataQuality: quality.score,
+
     trendLoss: Number(diagnostics.activeLossSignal.toFixed(2)),
     expectedLoss: Number(metrics.expectedLossKg.toFixed(2)),
+
     avgCalories: Math.round(metrics.avgCalories),
     avgSteps: Math.round(metrics.avgSteps),
+    effectiveTdee: Math.round(metrics.effectiveTdee),
+
     calorieTarget: adjustment.targetCalories,
     calorieLabel: adjustment.label,
+
     projectionDate: projection.projectedDate,
     scaleNoise: noise.label
   };
@@ -38,8 +50,7 @@ export function analyseReviewHistory(reviews = []) {
     return {
       hasPattern: false,
       title: "No review history yet",
-      summary:
-        "Save your first weekly review to start detecting repeated patterns."
+      summary: "Save your first weekly review to start detecting repeated patterns."
     };
   }
 
@@ -61,8 +72,7 @@ export function analyseReviewHistory(reviews = []) {
     return {
       hasPattern: true,
       title: `Repeated pattern: ${matching.primaryCause}`,
-      summary:
-        `This has appeared ${repeatedCause[1]} times in your recent reviews. The app should treat this as a recurring limiter, not a one-off signal.`
+      summary: `This has appeared ${repeatedCause[1]} times recently. Treat this as a recurring limiter, not a one-off signal.`
     };
   }
 
@@ -74,15 +84,13 @@ export function analyseReviewHistory(reviews = []) {
     return {
       hasPattern: true,
       title: "Repeated low efficiency",
-      summary:
-        "Fat-loss efficiency has been below target more than once recently. The plan may need a more deliberate adjustment."
+      summary: "Fat-loss efficiency has been below target more than once recently."
     };
   }
 
   return {
     hasPattern: false,
     title: "No repeating limiter yet",
-    summary:
-      "Recent reviews do not yet show a strong repeated pattern."
+    summary: "Recent reviews do not yet show a strong repeated pattern."
   };
 }
