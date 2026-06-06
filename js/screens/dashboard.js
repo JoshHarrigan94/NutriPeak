@@ -3,10 +3,31 @@ import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getRecommendation } from "../recommendations/recommendationEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
+import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
   return Number.isFinite(value) ? value.toFixed(dp) : "0";
+}
+
+function renderPhase(phase) {
+  return `
+    <section class="card">
+      <p class="eyebrow">Recommended phase</p>
+
+      <div class="phase-card">
+        <div class="phase-title">
+          <div>
+            <h3>${phase.title}</h3>
+            <p class="note">${phase.duration}</p>
+          </div>
+          <span class="phase-tag">${phase.tag}</span>
+        </div>
+
+        <p class="note">${phase.summary}</p>
+      </div>
+    </section>
+  `;
 }
 
 export function renderDashboard(state) {
@@ -14,6 +35,7 @@ export function renderDashboard(state) {
   const diagnostics = runDiagnostics(metrics);
   const decision = getDecision(diagnostics, metrics);
   const investigation = investigateStall(metrics, diagnostics);
+  const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const recommendation = getRecommendation(diagnostics, metrics);
 
   return `
@@ -24,6 +46,8 @@ export function renderDashboard(state) {
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
     </section>
+
+    ${renderPhase(phase)}
 
     <section class="card">
       <p class="eyebrow">Most likely limiter</p>
