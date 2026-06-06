@@ -15,8 +15,8 @@ export function renderDiagnostics(state) {
       <h2>Diagnostic Layer</h2>
 
       <p class="note">
-        This is the first explainable engine. It does not claim to directly measure hormones.
-        It infers likely pressure from behaviour versus outcome.
+        This engine infers what is happening under the hood by comparing restriction,
+        activity, adherence and actual weight trend.
       </p>
 
       <div class="diagnostic-strip">
@@ -27,5 +27,16 @@ export function renderDiagnostics(state) {
         ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
       </div>
     </section>
+
+    <section class="card">
+      <h2>Interpretation</h2>
+
+      <p class="note">
+        Adaptation: <strong>${diagnostics.labels.adaptation}</strong><br>
+        Fatigue: <strong>${diagnostics.labels.fatigue}</strong><br>
+        Retention / Masking: <strong>${diagnostics.labels.retention}</strong><br>
+        Adherence Risk: <strong>${diagnostics.labels.adherence}</strong>
+      </p>
+    </section>
   `;
-} 
+}
