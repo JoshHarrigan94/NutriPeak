@@ -1,4 +1,4 @@
-import { generateMetabolicReport } from "../engine/metabolicReportEngine.js";
+ import { generateMetabolicReport } from "../engine/metabolicReportEngine.js";
 import { metricCard } from "../ui/cards.js";
 
 function round(value, dp = 0) {
@@ -22,18 +22,19 @@ export function renderDiagnostics(state) {
   const report = generateMetabolicReport(state);
 
   const {
-    metrics,
-    diagnostics,
-    efficiency,
-    waterLoad,
-    metabolicState,
-    investigation,
-    quality,
-    noise,
-    phase,
-    calorieAdjustment,
-    projection
-  } = report;
+  metrics,
+  diagnostics,
+  efficiency,
+  compensation,
+  waterLoad,
+  metabolicState,
+  investigation,
+  quality,
+  noise,
+  phase,
+  calorieAdjustment,
+  projection
+} = report;
 
   return `
     <section class="card">
@@ -112,6 +113,30 @@ export function renderDiagnostics(state) {
         ${metricCard("Loss Signal", round(efficiency.dryAdjustedLossSignal, 2), "kg/wk")}
       </div>
     </section>
+
+    <section class="card">
+  <p class="eyebrow">Energy compensation</p>
+  <h2>${compensation.label}</h2>
+  <p class="note">${compensation.summary}</p>
+
+  <div class="grid">
+    ${metricCard("Compensation", round(compensation.compensationScore), "%")}
+    ${metricCard("Activity Efficiency", round(compensation.activityEfficiencyScore), "%")}
+    ${metricCard("High Activity", compensation.highActivity ? "Yes" : "No", "")}
+    ${metricCard("Large Deficit", compensation.largeDeficit ? "Yes" : "No", "")}
+  </div>
+
+  <div class="reason-list">
+    ${compensation.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
+
+  <p class="note">${compensation.interpretation}</p>
+</section>
 
     <section class="card">
       <p class="eyebrow">Stall investigation</p>
