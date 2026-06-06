@@ -28,4 +28,4 @@ export function renderDiagnostics(state) {
       </div>
     </section>
   `;
-}
+} 
