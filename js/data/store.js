@@ -41,10 +41,22 @@ export function addEntry(entry) {
   const nextEntry = {
     id: crypto.randomUUID(),
     date: entry.date || new Date().toISOString().slice(0, 10),
+
     calories: Number(entry.calories || 0),
+    protein: Number(entry.protein || 0),
+    carbs: Number(entry.carbs || 0),
+    fat: Number(entry.fat || 0),
+    fibre: Number(entry.fibre || 0),
+    sodium: Number(entry.sodium || 0),
+
     weightKg: Number(entry.weightKg || 0),
     steps: Number(entry.steps || 0),
     adherence: Number(entry.adherence || 100),
+
+    sleepHours: Number(entry.sleepHours || 0),
+    stress: Number(entry.stress || 0),
+    soreness: Number(entry.soreness || 0),
+
     notes: entry.notes || "",
     createdAt: new Date().toISOString()
   };
@@ -79,10 +91,22 @@ export function seedDemoData() {
     return {
       id: crypto.randomUUID(),
       date: date.toISOString().slice(0, 10),
+
       calories: Math.round(2500 + Math.sin(index) * 160),
+      protein: Math.round(185 + Math.sin(index / 2) * 18),
+      carbs: Math.round(255 + Math.cos(index / 3) * 45),
+      fat: Math.round(72 + Math.sin(index / 4) * 10),
+      fibre: Math.round(26 + Math.cos(index / 2) * 7),
+      sodium: Math.round(2600 + Math.sin(index / 1.4) * 700),
+
       weightKg: Number(weightDrift.toFixed(2)),
       steps: Math.round(10800 + Math.cos(index / 1.7) * 2600),
       adherence: index % 8 === 5 ? 78 : 93,
+
+      sleepHours: Number((6.6 + Math.sin(index / 2) * 0.8).toFixed(1)),
+      stress: index % 6 === 0 ? 8 : 5,
+      soreness: index % 5 === 0 ? 8 : 4,
+
       notes: "",
       createdAt: new Date().toISOString()
     };
