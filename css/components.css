@@ -121,3 +121,83 @@
   color: var(--muted);
   line-height: 1.45;
 }
+
+.decision-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.decision-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -45% 30%;
+  height: 160px;
+  background: radial-gradient(circle, rgba(23,23,23,.09), transparent 70%);
+  pointer-events: none;
+}
+
+.decision-label {
+  display: inline-flex;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.reason-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.reason-item {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 13px;
+  background: rgba(255,255,255,.36);
+}
+
+.reason-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(23,23,23,.08);
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: var(--value);
+  border-radius: inherit;
+  background: var(--ink);
+}
+
+.timeline {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 10px;
+  align-items: start;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.timeline-row span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
