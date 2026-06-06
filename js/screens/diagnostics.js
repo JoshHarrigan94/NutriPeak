@@ -15,8 +15,8 @@ export function renderDiagnostics(state) {
       <h2>Diagnostic Layer</h2>
 
       <p class="note">
-        This engine infers what is happening under the hood by comparing restriction,
-        activity, adherence and actual weight trend.
+        This engine infers what may be happening under the hood by comparing restriction,
+        activity, adherence and actual trend movement.
       </p>
 
       <div class="diagnostic-strip">
@@ -31,12 +31,35 @@ export function renderDiagnostics(state) {
     <section class="card">
       <h2>Interpretation</h2>
 
-      <p class="note">
-        Adaptation: <strong>${diagnostics.labels.adaptation}</strong><br>
-        Fatigue: <strong>${diagnostics.labels.fatigue}</strong><br>
-        Retention / Masking: <strong>${diagnostics.labels.retention}</strong><br>
-        Adherence Risk: <strong>${diagnostics.labels.adherence}</strong>
-      </p>
+      <div class="reason-list">
+        <div class="reason-item">
+          <strong>Adaptation: ${diagnostics.labels.adaptation}</strong>
+          <span class="note">
+            Pressure from low calories, high steps and low output versus expectation.
+          </span>
+        </div>
+
+        <div class="reason-item">
+          <strong>Fatigue: ${diagnostics.labels.fatigue}</strong>
+          <span class="note">
+            Pressure from restriction load, activity load, adherence decline and diet duration.
+          </span>
+        </div>
+
+        <div class="reason-item">
+          <strong>Retention / Masking: ${diagnostics.labels.retention}</strong>
+          <span class="note">
+            Possible water, glycogen, inflammation or stress masking actual fat loss.
+          </span>
+        </div>
+
+        <div class="reason-item">
+          <strong>Adherence Risk: ${diagnostics.labels.adherence}</strong>
+          <span class="note">
+            Difference between intended execution and recorded adherence.
+          </span>
+        </div>
+      </div>
     </section>
   `;
 }
