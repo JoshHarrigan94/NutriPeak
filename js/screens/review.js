@@ -3,6 +3,7 @@ import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
+import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
@@ -48,6 +49,11 @@ export function renderReview(state) {
   const decision = getDecision(diagnostics, metrics);
   const investigation = investigateStall(metrics, diagnostics);
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
+  const quality = calculateDataQuality(state);
+
+  const adjustedConfidence = Math.round(
+    decision.confidence * (0.65 + quality.score / 285)
+  );
 
   return `
     <section class="card decision-card">
@@ -57,11 +63,25 @@ export function renderReview(state) {
       <p class="note">${decision.summary}</p>
 
       <div class="progress-track">
-        <div class="progress-fill" style="--value:${pct(decision.confidence)}"></div>
+        <div class="progress-fill" style="--value:${pct(adjustedConfidence)}"></div>
       </div>
 
       <p class="note">
-        Decision confidence: <strong>${pct(decision.confidence)}</strong>
+        Decision confidence: <strong>${pct(adjustedConfidence)}</strong>
+        after data-quality adjustment.
+      </p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Data confidence</p>
+      <h2>${quality.label}</h2>
+
+      <div class="quality-ring" style="--value:${quality.score}%">
+        <div class="quality-ring-inner">${quality.score}%</div>
+      </div>
+
+      <p class="note">
+        Logged days in recent window: <strong>${quality.loggedDays}/7</strong>.
       </p>
     </section>
 
