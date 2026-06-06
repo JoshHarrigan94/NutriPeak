@@ -2,7 +2,7 @@ import { getState, subscribe, seedDemoData } from "./data/store.js";
 import { renderDashboard } from "./screens/dashboard.js";
 import { renderLog, bindLogEvents } from "./screens/log.js";
 import { renderDiagnostics } from "./screens/diagnostics.js";
-import { renderReview } from "./screens/review.js";
+import { renderReview, bindReviewEvents } from "./screens/review.js";
 import { renderSettings, bindSettingsEvents } from "./screens/settings.js";
 
 const app = document.querySelector("#app");
@@ -27,10 +27,10 @@ const screens = {
     bind: null
   },
   review: {
-    title: "Review",
-    render: renderReview,
-    bind: null
-  },
+  title: "Review",
+  render: renderReview,
+  bind: bindReviewEvents
+},
   settings: {
     title: "Settings",
     render: renderSettings,
