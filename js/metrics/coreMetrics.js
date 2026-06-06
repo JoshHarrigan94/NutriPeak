@@ -83,15 +83,30 @@ export function calculateMetrics(state) {
 
   const longTrendLossPerWeek = calculateSlope(last28);
 
-  const estimatedDeficit = Math.max(
-    0,
-    (state.user.estimatedTdee || 0) - avgCalories
-  );
+  const adaptiveMaintenance = estimateAdaptiveMaintenance(state, {
+  daysLogged,
+  avgCalories
+});
 
-  const expectedLossKg =
-    estimatedDeficit > 0
-      ? (estimatedDeficit * 7) / 7700
-      : state.user.targetRateKgPerWeek;
+const effectiveTdee =
+  adaptiveMaintenance.available
+    ? adaptiveMaintenance.estimatedMaintenance
+    : state.user.estimatedTdee;
+
+const estimatedDeficit = Math.max(
+  0,
+  effectiveTdee - avgCalories
+);
+
+const expectedLossKg =
+  estimatedDeficit > 0
+    ? (estimatedDeficit * 7) / 7700
+    : state.user.targetRateKgPerWeek;
+
+const weeklyCalorieDeficit = Math.max(
+  0,
+  sum(last7.map(entry => effectiveTdee - entry.calories))
+);
 
   const totalLoss = firstWeight - latestWeight;
   const remainingLoss = Math.max(0, latestWeight - state.user.goalWeightKg);
@@ -134,11 +149,6 @@ export function calculateMetrics(state) {
   const lowProteinDays = countWhere(last7, entry =>
     entry.protein > 0 &&
     entry.protein < proteinTarget
-  );
-
-  const weeklyCalorieDeficit = Math.max(
-    0,
-    sum(last7.map(entry => state.user.estimatedTdee - entry.calories))
   );
   
   const adaptiveMaintenance = estimateAdaptiveMaintenance(state, {
