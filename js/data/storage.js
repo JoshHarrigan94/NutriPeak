@@ -1,4 +1,4 @@
-const KEY = "metabolic-intelligence-v2";
+const KEY = "metabolic-intelligence-v3";
 
 export const defaultState = {
   user: {
@@ -10,13 +10,25 @@ export const defaultState = {
     minimumCalories: 2200,
     highStepThreshold: 12000
   },
-  entries: []
+  entries: [],
+  reviews: []
 };
 
 export function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : structuredClone(defaultState);
+    const parsed = raw ? JSON.parse(raw) : structuredClone(defaultState);
+
+    return {
+      ...defaultState,
+      ...parsed,
+      user: {
+        ...defaultState.user,
+        ...(parsed.user || {})
+      },
+      entries: parsed.entries || [],
+      reviews: parsed.reviews || []
+    };
   } catch {
     return structuredClone(defaultState);
   }
