@@ -201,3 +201,67 @@
   font-size: 12px;
   font-weight: 800;
 }
+
+.investigation-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.investigation-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 15px;
+  background: rgba(255,255,255,.38);
+}
+
+.investigation-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.investigation-card h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -.03em;
+}
+
+.investigation-score {
+  font-weight: 950;
+  font-size: 18px;
+}
+
+.investigation-card p {
+  margin: 0;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.evidence-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.evidence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--ink);
+  margin-top: 5px;
+  flex: 0 0 auto;
+}
+
+.primary-cause {
+  border-color: rgba(23,23,23,.38);
+  background: rgba(23,23,23,.06);
+}
