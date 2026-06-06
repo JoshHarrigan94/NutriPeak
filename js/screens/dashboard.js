@@ -4,6 +4,7 @@ import { getRecommendation } from "../recommendations/recommendationEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
+import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
@@ -37,6 +38,7 @@ export function renderDashboard(state) {
   const investigation = investigateStall(metrics, diagnostics);
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const recommendation = getRecommendation(diagnostics, metrics);
+  const quality = calculateDataQuality(state);
 
   return `
     <section class="card decision-card">
@@ -45,6 +47,21 @@ export function renderDashboard(state) {
       <div class="review-action">${decision.action}</div>
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Data confidence</p>
+      <h2>${quality.label}</h2>
+
+      <div class="quality-ring" style="--value:${quality.score}%">
+        <div class="quality-ring-inner">${quality.score}%</div>
+      </div>
+
+      <p class="note">
+        ${quality.missingToday.length
+          ? `Missing today: ${quality.missingToday.map(item => item.label).join(", ")}.`
+          : "Today’s check-in is complete enough for a strong read."}
+      </p>
     </section>
 
     ${renderPhase(phase)}
