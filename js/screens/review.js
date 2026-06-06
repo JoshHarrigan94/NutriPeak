@@ -10,7 +10,7 @@ import { calculateProjection } from "../projections/projectionEngine.js";
 import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { saveWeeklyReview, deleteReview } from "../data/store.js";
 import { buildReviewSnapshot, analyseReviewHistory } from "../history/reviewHistory.js";
-
+import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
 }
@@ -128,6 +128,13 @@ export function renderReview(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const metabolicState = classifyMetabolicState(
+  metrics,
+  diagnostics,
+  investigation,
+  quality,
+  noise
+);
   const projection = calculateProjection(metrics, state);
   const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
   const pattern = analyseReviewHistory(state.reviews);
@@ -154,6 +161,21 @@ export function renderReview(state) {
       <p class="eyebrow">Weekly decision</p>
       <div class="review-action">${decision.action}</div>
       <p class="note">${decision.summary}</p>
+
+      <section class="card">
+  <p class="eyebrow">Current metabolic state</p>
+  <h2>${metabolicState.primary.label}</h2>
+  <p class="note">${metabolicState.primary.summary}</p>
+
+  <div class="reason-list">
+    ${metabolicState.primary.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
+</section>
 
       <div class="progress-track">
         <div class="progress-fill" style="--value:${pct(adjustedConfidence)}"></div>
