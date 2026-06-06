@@ -19,8 +19,21 @@ export function runDiagnostics(metrics) {
       ? clamp((activeLossSignal / metrics.expectedLossKg) * 100)
       : 0;
 
-  const lowCaloriesPressure = clamp(metrics.lowCalorieDays * 8);
+  const deficitPressure =
+    metrics.estimatedDeficit > 900 ? 24 :
+    metrics.estimatedDeficit > 700 ? 18 :
+    metrics.estimatedDeficit > 500 ? 10 :
+    4;
+
+  const lowCaloriesPressure = clamp(metrics.lowCalorieDays * 7);
   const highStepsPressure = clamp(metrics.highStepDays * 6);
+
+  const maintenanceSuppressionPressure =
+    metrics.adaptiveMaintenance?.delta <= -500 ? 24 :
+    metrics.adaptiveMaintenance?.delta <= -300 ? 16 :
+    metrics.adaptiveMaintenance?.delta <= -150 ? 8 :
+    0;
+
   const poorOutputPressure =
     efficiency < 45 ? 35 :
     efficiency < 70 ? 22 :
@@ -28,24 +41,31 @@ export function runDiagnostics(metrics) {
     0;
 
   const adaptationRisk = clamp(
+    deficitPressure +
     lowCaloriesPressure +
     highStepsPressure +
+    maintenanceSuppressionPressure +
     poorOutputPressure
   );
 
   const adherenceRisk = clamp(100 - metrics.avgAdherence);
 
   const fatigueRisk = clamp(
+    deficitPressure +
     lowCaloriesPressure +
     highStepsPressure +
     adherenceRisk +
-    (metrics.daysLogged >= 21 ? 12 : 0)
+    (metrics.daysLogged >= 21 ? 12 : 0) +
+    (metrics.lowSleepDays >= 3 ? 10 : 0) +
+    (metrics.highStressDays >= 3 ? 10 : 0)
   );
 
   const retentionRisk = clamp(
     (efficiency < 70 ? 30 : 8) +
     (metrics.highStepDays >= 4 ? 14 : 0) +
-    (metrics.lowCalorieDays >= 4 ? 10 : 0)
+    (metrics.lowCalorieDays >= 4 ? 10 : 0) +
+    (metrics.highSodiumDays >= 2 ? 10 : 0) +
+    (metrics.highSorenessDays >= 2 ? 10 : 0)
   );
 
   let status = "good";
@@ -69,6 +89,8 @@ export function runDiagnostics(metrics) {
     fatigueRisk,
     adherenceRisk,
     activeLossSignal,
+    deficitPressure,
+    maintenanceSuppressionPressure,
     status,
     label,
     labels: {
