@@ -5,6 +5,8 @@ import { getDecision } from "../decisions/decisionEngine.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
+import { calculateProjection } from "../projections/projectionEngine.js";
+import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { metricCard } from "../ui/cards.js";
 
 function round(value) {
@@ -56,6 +58,8 @@ export function renderDiagnostics(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const projection = calculateProjection(metrics, state);
+  const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
 
   return `
     <section class="card">
@@ -74,6 +78,24 @@ export function renderDiagnostics(state) {
         ${metricCard("Adherence Risk", round(diagnostics.adherenceRisk), "%")}
         ${metricCard("Data Quality", quality.score, "%")}
       </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Adaptive guidance</p>
+      <h2>${adjustment.label}</h2>
+      <p class="note">
+        Suggested target: <strong>${adjustment.targetCalories} kcal</strong>.
+        ${adjustment.summary}
+      </p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Goal projection</p>
+      <h2>${projection.label}</h2>
+      <p class="note">
+        Projected date: <strong>${projection.projectedDate}</strong>.
+        ${projection.summary}
+      </p>
     </section>
 
     <section class="card">
