@@ -5,6 +5,8 @@ import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
 import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { calculateDataQuality } from "../quality/dataQualityEngine.js";
+import { renderTrendChart } from "../charts/trendChart.js";
+import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
@@ -31,6 +33,28 @@ function renderPhase(phase) {
   `;
 }
 
+function renderScaleNoise(noise) {
+  return `
+    <section class="card">
+      <p class="eyebrow">Scale noise</p>
+
+      <div class="noise-card">
+        <span class="noise-label">${noise.label}</span>
+        <p class="note">${noise.summary}</p>
+
+        <div class="noise-list">
+          ${noise.drivers.map(driver => `
+            <div class="noise-item">
+              <span>${driver.label}</span>
+              <strong>${driver.value}</strong>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 export function renderDashboard(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
@@ -39,6 +63,7 @@ export function renderDashboard(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const recommendation = getRecommendation(diagnostics, metrics);
   const quality = calculateDataQuality(state);
+  const noise = analyseScaleNoise(metrics, state.entries);
 
   return `
     <section class="card decision-card">
@@ -48,6 +73,14 @@ export function renderDashboard(state) {
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
     </section>
+
+    <section class="card chart-card">
+      <p class="eyebrow">Trend weight</p>
+      <h2>Scale vs signal</h2>
+      ${renderTrendChart(state.entries)}
+    </section>
+
+    ${renderScaleNoise(noise)}
 
     <section class="card">
       <p class="eyebrow">Data confidence</p>
