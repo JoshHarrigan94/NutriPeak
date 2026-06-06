@@ -7,10 +7,19 @@ import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 import { renderTrendChart } from "../charts/trendChart.js";
 import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
+import { calculateProjection } from "../projections/projectionEngine.js";
+import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
+import { analyseReviewHistory } from "../history/reviewHistory.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
   return Number.isFinite(value) ? value.toFixed(dp) : "0";
+}
+
+function signed(value) {
+  const rounded = Math.round(value);
+  if (rounded > 0) return `+${rounded}`;
+  return `${rounded}`;
 }
 
 function renderPhase(phase) {
@@ -55,6 +64,59 @@ function renderScaleNoise(noise) {
   `;
 }
 
+function renderProjection(projection) {
+  return `
+    <section class="card">
+      <p class="eyebrow">Goal projection</p>
+
+      <div class="projection-card">
+        <span class="noise-label">${projection.label}</span>
+        <div class="projection-date">${projection.projectedDate}</div>
+        <p class="note">${projection.summary}</p>
+      </div>
+    </section>
+  `;
+}
+
+function renderCalories(adjustment) {
+  return `
+    <section class="card">
+      <p class="eyebrow">Calorie guidance</p>
+
+      <div class="adjustment-card">
+        <span class="noise-label">${adjustment.label}</span>
+        <div class="adjustment-value">${adjustment.targetCalories}</div>
+        <p class="note">${adjustment.summary}</p>
+
+        <div class="adjustment-meta">
+          <span>Change</span>
+          <strong>${signed(adjustment.delta)} kcal</strong>
+        </div>
+
+        ${
+          adjustment.warning
+            ? `<div class="warn-box">${adjustment.warning}</div>`
+            : ""
+        }
+      </div>
+    </section>
+  `;
+}
+
+function renderHistoryPattern(pattern) {
+  return `
+    <section class="card">
+      <p class="eyebrow">Review memory</p>
+
+      <div class="${pattern.hasPattern ? "pattern-alert" : "noise-card"}">
+        <span class="noise-label">${pattern.hasPattern ? "Pattern found" : "No pattern"}</span>
+        <h2>${pattern.title}</h2>
+        <p class="note">${pattern.summary}</p>
+      </div>
+    </section>
+  `;
+}
+
 export function renderDashboard(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
@@ -64,6 +126,9 @@ export function renderDashboard(state) {
   const recommendation = getRecommendation(diagnostics, metrics);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const projection = calculateProjection(metrics, state);
+  const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
+  const pattern = analyseReviewHistory(state.reviews);
 
   return `
     <section class="card decision-card">
@@ -73,6 +138,10 @@ export function renderDashboard(state) {
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
     </section>
+
+    ${renderHistoryPattern(pattern)}
+    ${renderCalories(adjustment)}
+    ${renderProjection(projection)}
 
     <section class="card chart-card">
       <p class="eyebrow">Trend weight</p>
