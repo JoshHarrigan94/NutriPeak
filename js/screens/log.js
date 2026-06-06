@@ -34,6 +34,11 @@ export function renderLog(state) {
           <input name="adherence" type="number" inputmode="numeric" value="100" />
         </label>
 
+        <label class="field">
+          Notes
+          <input name="notes" type="text" placeholder="Sleep poor, high stress, heavy legs..." />
+        </label>
+
         <button class="primary-button" type="submit">Save Entry</button>
       </form>
     </section>
@@ -47,7 +52,10 @@ export function renderLog(state) {
               <div class="entry">
                 <div>
                   <strong>${entry.date}</strong><br>
-                  <small>${entry.calories} kcal · ${entry.weightKg}kg · ${entry.steps} steps</small>
+                  <small>
+                    ${entry.calories} kcal · ${entry.weightKg}kg · ${entry.steps} steps
+                    ${entry.notes ? `<br>${entry.notes}` : ""}
+                  </small>
                 </div>
 
                 <button class="delete-btn" data-delete="${entry.id}">
@@ -78,4 +86,4 @@ export function bindLogEvents() {
       deleteEntry(button.dataset.delete);
     });
   });
-} 
+}
