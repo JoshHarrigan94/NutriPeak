@@ -71,6 +71,25 @@ export function renderDiagnostics(state) {
   return `
     <section class="card">
       <h2>Diagnostic Layer</h2>
+      
+      <section class="card">
+  <p class="eyebrow">Maintenance model</p>
+  <h2>${metrics.adaptiveMaintenance.label}</h2>
+  <p class="note">${metrics.adaptiveMaintenance.summary}</p>
+
+  <div class="reason-list">
+    ${metrics.adaptiveMaintenance.windows.map(window => `
+      <div class="reason-item">
+        <strong>${window.days}-day window</strong>
+        <span class="note">
+          Avg intake ${window.avgCalories.toFixed(0)} kcal · 
+          weight change ${window.weeklyChange.toFixed(2)}kg/week · 
+          observed maintenance ${window.observedMaintenance.toFixed(0)} kcal
+        </span>
+      </div>
+    `).join("")}
+  </div>
+</section>
 
       <p class="note">
         This engine compares restriction, activity, adherence, macro quality,
