@@ -200,6 +200,19 @@ export function renderDashboard(state) {
         <strong>${round(metrics.expectedLossKg, 2)}kg/week</strong>.
       </p>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Adaptive maintenance</p>
+  <h2>${metrics.adaptiveMaintenance.label}</h2>
+  <p class="note">${metrics.adaptiveMaintenance.summary}</p>
+
+  <div class="grid">
+    ${metricCard("Observed", metrics.adaptiveMaintenance.estimatedMaintenance, " kcal")}
+    ${metricCard("Original", metrics.adaptiveMaintenance.userEstimatedTdee, " kcal")}
+    ${metricCard("Delta", metrics.adaptiveMaintenance.delta, " kcal")}
+    ${metricCard("Confidence", metrics.adaptiveMaintenance.confidence, "")}
+  </div>
+</section>
 
     <section class="card">
       <h2>Nutrition Context</h2>
