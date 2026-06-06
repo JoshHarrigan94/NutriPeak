@@ -9,7 +9,6 @@ export function getState() {
 
 export function subscribe(fn) {
   listeners.push(fn);
-
   return () => {
     listeners = listeners.filter(listener => listener !== fn);
   };
@@ -38,9 +37,11 @@ export function updateUserSettings(settings) {
 }
 
 export function addEntry(entry) {
+  const date = entry.date || new Date().toISOString().slice(0, 10);
+
   const nextEntry = {
-    id: crypto.randomUUID(),
-    date: entry.date || new Date().toISOString().slice(0, 10),
+    id: entry.id || crypto.randomUUID(),
+    date,
 
     calories: Number(entry.calories || 0),
     protein: Number(entry.protein || 0),
@@ -58,14 +59,23 @@ export function addEntry(entry) {
     soreness: Number(entry.soreness || 0),
 
     notes: entry.notes || "",
-    createdAt: new Date().toISOString()
+    createdAt: entry.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
+
+  const existing = state.entries.find(item => item.date === date);
+
+  const nextEntries = existing
+    ? state.entries.map(item =>
+        item.date === date
+          ? { ...nextEntry, id: item.id, createdAt: item.createdAt }
+          : item
+      )
+    : [...state.entries, nextEntry];
 
   commit({
     ...state,
-    entries: [...state.entries, nextEntry].sort((a, b) =>
-      a.date.localeCompare(b.date)
-    )
+    entries: nextEntries.sort((a, b) => a.date.localeCompare(b.date))
   });
 }
 
@@ -79,19 +89,23 @@ export function deleteEntry(id) {
 export function saveWeeklyReview(review) {
   const today = new Date().toISOString().slice(0, 10);
 
+  const existing = (state.reviews || []).find(item => item.date === today);
+
   const reviewRecord = {
-    id: crypto.randomUUID(),
+    id: existing?.id || crypto.randomUUID(),
     date: today,
     ...review,
-    createdAt: new Date().toISOString()
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
+
+  const nextReviews = existing
+    ? state.reviews.map(item => item.date === today ? reviewRecord : item)
+    : [reviewRecord, ...(state.reviews || [])];
 
   commit({
     ...state,
-    reviews: [
-      reviewRecord,
-      ...(state.reviews || [])
-    ].slice(0, 24)
+    reviews: nextReviews.slice(0, 24)
   });
 }
 
