@@ -33,6 +33,10 @@ function calculateSlope(entries) {
   return ((first.weightKg - last.weightKg) / dayDiff) * 7;
 }
 
+function countWhere(entries, fn) {
+  return entries.filter(fn).length;
+}
+
 export function calculateMetrics(state) {
   const entries = [...state.entries].sort((a, b) =>
     a.date.localeCompare(b.date)
@@ -44,6 +48,16 @@ export function calculateMetrics(state) {
   const last28 = entries.slice(-28);
 
   const avgCalories = average(last7.map(entry => entry.calories));
+  const avgProtein = average(last7.map(entry => entry.protein));
+  const avgCarbs = average(last7.map(entry => entry.carbs));
+  const avgFat = average(last7.map(entry => entry.fat));
+  const avgFibre = average(last7.map(entry => entry.fibre));
+  const avgSodium = average(last7.map(entry => entry.sodium));
+
+  const avgSleep = average(last7.map(entry => entry.sleepHours));
+  const avgStress = average(last7.map(entry => entry.stress));
+  const avgSoreness = average(last7.map(entry => entry.soreness));
+
   const avgSteps = average(last7.map(entry => entry.steps));
   const avgAdherence = average(last7.map(entry => entry.adherence));
 
@@ -83,14 +97,43 @@ export function calculateMetrics(state) {
 
   const daysLogged = new Set(entries.map(entry => entry.date)).size;
 
-  const lowCalorieDays = last7.filter(entry =>
+  const lowCalorieDays = countWhere(last7, entry =>
     entry.calories > 0 &&
     entry.calories < state.user.minimumCalories
-  ).length;
+  );
 
-  const highStepDays = last7.filter(entry =>
+  const highStepDays = countWhere(last7, entry =>
     entry.steps >= state.user.highStepThreshold
-  ).length;
+  );
+
+  const lowSleepDays = countWhere(last7, entry =>
+    entry.sleepHours > 0 &&
+    entry.sleepHours < 6.5
+  );
+
+  const highStressDays = countWhere(last7, entry =>
+    entry.stress >= 7
+  );
+
+  const highSorenessDays = countWhere(last7, entry =>
+    entry.soreness >= 7
+  );
+
+  const lowFibreDays = countWhere(last7, entry =>
+    entry.fibre > 0 &&
+    entry.fibre < 20
+  );
+
+  const highSodiumDays = countWhere(last7, entry =>
+    entry.sodium >= 3500
+  );
+
+  const proteinTarget = Math.max(160, latestWeight * 1.8);
+
+  const lowProteinDays = countWhere(last7, entry =>
+    entry.protein > 0 &&
+    entry.protein < proteinTarget
+  );
 
   const weeklyCalorieDeficit = Math.max(
     0,
@@ -100,9 +143,21 @@ export function calculateMetrics(state) {
   return {
     entryCount: entries.length,
     daysLogged,
+
     avgCalories,
+    avgProtein,
+    avgCarbs,
+    avgFat,
+    avgFibre,
+    avgSodium,
+
+    avgSleep,
+    avgStress,
+    avgSoreness,
+
     avgSteps,
     avgAdherence,
+
     firstWeight,
     latestWeight,
     recentAvgWeight,
@@ -115,7 +170,15 @@ export function calculateMetrics(state) {
     weeklyCalorieDeficit,
     totalLoss,
     remainingLoss,
+
+    proteinTarget,
+    lowProteinDays,
     lowCalorieDays,
-    highStepDays
+    highStepDays,
+    lowSleepDays,
+    highStressDays,
+    highSorenessDays,
+    lowFibreDays,
+    highSodiumDays
   };
 }
