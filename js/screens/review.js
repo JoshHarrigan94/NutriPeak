@@ -6,6 +6,10 @@ import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 import { calculateDataQuality } from "../quality/dataQualityEngine.js";
 import { renderTrendChart } from "../charts/trendChart.js";
 import { analyseScaleNoise } from "../insights/scaleNoiseEngine.js";
+import { calculateProjection } from "../projections/projectionEngine.js";
+import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
+import { saveWeeklyReview, deleteReview } from "../data/store.js";
+import { buildReviewSnapshot, analyseReviewHistory } from "../history/reviewHistory.js";
 
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
@@ -13,6 +17,12 @@ function pct(value) {
 
 function num(value, dp = 0) {
   return Number.isFinite(value) ? value.toFixed(dp) : "0";
+}
+
+function signed(value) {
+  const rounded = Math.round(value);
+  if (rounded > 0) return `+${rounded}`;
+  return `${rounded}`;
 }
 
 function evidenceList(items) {
@@ -63,6 +73,53 @@ function renderNoise(noise) {
   `;
 }
 
+function renderHistory(reviews) {
+  if (!reviews?.length) {
+    return `<p class="note">No saved weekly reviews yet.</p>`;
+  }
+
+  return `
+    <div class="history-list">
+      ${reviews.slice(0, 8).map(review => `
+        <article class="history-item">
+          <div class="history-top">
+            <div>
+              <strong>${review.decisionLabel}</strong>
+              <span>${review.date} · ${review.primaryCause}</span>
+            </div>
+            <span>${review.phaseTag}</span>
+          </div>
+
+          <p class="note">${review.calorieLabel} · ${review.calorieTarget} kcal</p>
+
+          <div class="history-metrics">
+            <div class="history-metric">
+              <span>Eff</span>
+              <strong>${review.efficiency}%</strong>
+            </div>
+
+            <div class="history-metric">
+              <span>Trend</span>
+              <strong>${review.trendLoss}kg</strong>
+            </div>
+
+            <div class="history-metric">
+              <span>Quality</span>
+              <strong>${review.dataQuality}%</strong>
+            </div>
+          </div>
+
+          <div class="history-actions">
+            <button class="delete-btn" data-delete-review="${review.id}">
+              Delete
+            </button>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 export function renderReview(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
@@ -71,10 +128,25 @@ export function renderReview(state) {
   const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
   const quality = calculateDataQuality(state);
   const noise = analyseScaleNoise(metrics, state.entries);
+  const projection = calculateProjection(metrics, state);
+  const adjustment = getCalorieAdjustment(metrics, diagnostics, decision, investigation, state);
+  const pattern = analyseReviewHistory(state.reviews);
 
   const adjustedConfidence = Math.round(
     decision.confidence * (0.65 + quality.score / 285)
   );
+
+  window.__currentReviewSnapshot = buildReviewSnapshot({
+    metrics,
+    diagnostics,
+    decision,
+    investigation,
+    phase,
+    projection,
+    adjustment,
+    quality,
+    noise
+  });
 
   return `
     <section class="card decision-card">
@@ -91,6 +163,50 @@ export function renderReview(state) {
         Decision confidence: <strong>${pct(adjustedConfidence)}</strong>
         after data-quality adjustment.
       </p>
+
+      <button id="save-review" class="primary-button" type="button">
+        Save Weekly Review
+      </button>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Review memory</p>
+      <div class="${pattern.hasPattern ? "pattern-alert" : "noise-card"}">
+        <span class="noise-label">${pattern.hasPattern ? "Pattern found" : "No pattern"}</span>
+        <h2>${pattern.title}</h2>
+        <p class="note">${pattern.summary}</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Calorie guidance</p>
+
+      <div class="adjustment-card">
+        <span class="noise-label">${adjustment.label}</span>
+        <div class="adjustment-value">${adjustment.targetCalories}</div>
+        <p class="note">${adjustment.summary}</p>
+
+        <div class="adjustment-meta">
+          <span>Suggested change</span>
+          <strong>${signed(adjustment.delta)} kcal</strong>
+        </div>
+
+        ${
+          adjustment.warning
+            ? `<div class="warn-box">${adjustment.warning}</div>`
+            : ""
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Goal projection</p>
+
+      <div class="projection-card">
+        <span class="noise-label">${projection.label}</span>
+        <div class="projection-date">${projection.projectedDate}</div>
+        <p class="note">${projection.summary}</p>
+      </div>
     </section>
 
     <section class="card chart-card">
@@ -169,8 +285,27 @@ export function renderReview(state) {
     </section>
 
     <section class="card">
+      <h2>Saved Reviews</h2>
+      ${renderHistory(state.reviews)}
+    </section>
+
+    <section class="card">
       <h2>Next Checkpoint</h2>
       <p class="note">${decision.nextCheck}</p>
     </section>
   `;
+}
+
+export function bindReviewEvents() {
+  document.querySelector("#save-review")?.addEventListener("click", () => {
+    if (window.__currentReviewSnapshot) {
+      saveWeeklyReview(window.__currentReviewSnapshot);
+    }
+  });
+
+  document.querySelectorAll("[data-delete-review]").forEach(button => {
+    button.addEventListener("click", () => {
+      deleteReview(button.dataset.deleteReview);
+    });
+  });
 }
