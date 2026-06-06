@@ -42,6 +42,16 @@ export function renderDashboard(state) {
     </section>
 
     <section class="card">
+      <h2>Nutrition Context</h2>
+      <div class="grid">
+        ${metricCard("Protein", round(metrics.avgProtein), "g")}
+        ${metricCard("Carbs", round(metrics.avgCarbs), "g")}
+        ${metricCard("Fat", round(metrics.avgFat), "g")}
+        ${metricCard("Fibre", round(metrics.avgFibre), "g")}
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Control Centre</h2>
       <div class="grid">
         ${metricCard("Avg Calories", round(metrics.avgCalories), "")}
