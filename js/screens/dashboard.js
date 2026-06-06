@@ -2,6 +2,7 @@ import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getRecommendation } from "../recommendations/recommendationEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
+import { investigateStall } from "../investigations/stallInvestigator.js";
 import { metricCard, diagnosticPill } from "../ui/cards.js";
 
 function round(value, dp = 0) {
@@ -12,6 +13,7 @@ export function renderDashboard(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
   const decision = getDecision(diagnostics, metrics);
+  const investigation = investigateStall(metrics, diagnostics);
   const recommendation = getRecommendation(diagnostics, metrics);
 
   return `
@@ -21,6 +23,12 @@ export function renderDashboard(state) {
       <div class="review-action">${decision.action}</div>
       ${diagnosticPill(diagnostics)}
       <p class="note">${decision.summary}</p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Most likely limiter</p>
+      <h2>${investigation.primary.title}</h2>
+      <p class="note">${investigation.primary.summary}</p>
     </section>
 
     <section class="card">
