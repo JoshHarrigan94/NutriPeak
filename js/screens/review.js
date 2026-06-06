@@ -2,6 +2,7 @@ import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { runDiagnostics } from "../diagnostics/diagnosticEngine.js";
 import { getDecision } from "../decisions/decisionEngine.js";
 import { investigateStall } from "../investigations/stallInvestigator.js";
+import { getPhaseRecommendation } from "../phases/phaseEngine.js";
 
 function pct(value) {
   return `${Math.max(0, Math.min(100, value)).toFixed(0)}%`;
@@ -28,11 +29,25 @@ function evidenceList(items) {
   `;
 }
 
+function renderPhaseSteps(phase) {
+  return `
+    <div class="phase-steps">
+      ${phase.steps.map((step, index) => `
+        <div class="phase-step">
+          <span class="phase-step-index">${index + 1}</span>
+          <span>${step}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 export function renderReview(state) {
   const metrics = calculateMetrics(state);
   const diagnostics = runDiagnostics(metrics);
   const decision = getDecision(diagnostics, metrics);
   const investigation = investigateStall(metrics, diagnostics);
+  const phase = getPhaseRecommendation(diagnostics, metrics, decision, investigation);
 
   return `
     <section class="card decision-card">
@@ -48,6 +63,23 @@ export function renderReview(state) {
       <p class="note">
         Decision confidence: <strong>${pct(decision.confidence)}</strong>
       </p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Recommended phase</p>
+
+      <div class="phase-card">
+        <div class="phase-title">
+          <div>
+            <h3>${phase.title}</h3>
+            <p class="note">${phase.duration}</p>
+          </div>
+          <span class="phase-tag">${phase.tag}</span>
+        </div>
+
+        <p class="note">${phase.summary}</p>
+        ${renderPhaseSteps(phase)}
+      </div>
     </section>
 
     <section class="card">
