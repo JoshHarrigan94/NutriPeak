@@ -1,3 +1,4 @@
+import { analyseEnergyCompensation } from "../compensation/energyCompensationEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { estimateWaterLoad } from "../water/waterLoadEngine.js";
 import { calculateEfficiency } from "../efficiency/efficiencyEngine.js";
@@ -21,6 +22,12 @@ export function generateMetabolicReport(state) {
   const efficiency = calculateEfficiency(metrics, waterLoad);
 
   const diagnostics = runDiagnostics(metrics, efficiency);
+  const compensation = analyseEnergyCompensation(
+  metrics,
+  diagnostics,
+  efficiency,
+  waterLoad
+);
   const investigation = investigateStall(metrics, diagnostics);
 
   const metabolicState = classifyMetabolicState(
@@ -51,19 +58,20 @@ export function generateMetabolicReport(state) {
   const reviewPattern = analyseReviewHistory(state.reviews || []);
 
   return {
-    state,
-    metrics,
-    quality,
-    noise,
-    waterLoad,
-    efficiency,
-    diagnostics,
-    investigation,
-    metabolicState,
-    decision,
-    phase,
-    projection,
-    calorieAdjustment,
-    reviewPattern
-  };
+  state,
+  metrics,
+  quality,
+  noise,
+  waterLoad,
+  efficiency,
+  diagnostics,
+  compensation,
+  investigation,
+  metabolicState,
+  decision,
+  phase,
+  projection,
+  calorieAdjustment,
+  reviewPattern
+};
 }
