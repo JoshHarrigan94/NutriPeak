@@ -18,7 +18,9 @@ export function renderDashboard(state) {
       <div class="hero-score">${round(diagnostics.efficiency)}%</div>
       ${diagnosticPill(diagnostics)}
       <p class="note">
-        Fat-loss efficiency compares expected weight loss against actual trend movement.
+        ${state.user.name || "Athlete"}, your current trend loss is 
+        <strong>${round(diagnostics.activeLossSignal, 2)}kg/week</strong> against an expected 
+        <strong>${round(metrics.expectedLossKg, 2)}kg/week</strong>.
       </p>
     </section>
 
@@ -27,8 +29,10 @@ export function renderDashboard(state) {
       <div class="grid">
         ${metricCard("Avg Calories", round(metrics.avgCalories), "")}
         ${metricCard("Avg Steps", round(metrics.avgSteps), "")}
-        ${metricCard("Actual Loss", round(metrics.actualLossKg, 2), "kg")}
-        ${metricCard("Expected Loss", round(metrics.expectedLossKg, 2), "kg")}
+        ${metricCard("Trend Loss", round(metrics.trendLossPerWeek, 2), "kg/wk")}
+        ${metricCard("Expected Loss", round(metrics.expectedLossKg, 2), "kg/wk")}
+        ${metricCard("Total Loss", round(metrics.totalLoss, 1), "kg")}
+        ${metricCard("Remaining", round(metrics.remainingLoss, 1), "kg")}
       </div>
     </section>
 
