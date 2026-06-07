@@ -39,6 +39,7 @@ export function renderDiagnostics(state) {
   calorieAdjustment,
   confidence,
   resolution,
+  schema,
   projection
 } = report;
 
@@ -96,6 +97,31 @@ export function renderDiagnostics(state) {
     <div class="reason-item">
       <strong>Do not do</strong>
       <span class="note">${resolution.avoidAction}</span>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <p class="eyebrow">UI-ready report schema</p>
+  <h2>${schema.summary.primaryAction}</h2>
+  <p class="note">${schema.summary.rationale}</p>
+
+  <div class="grid">
+    ${metricCard("State", schema.currentState.label, "")}
+    ${metricCard("Confidence", schema.confidence.overall, "%")}
+    ${metricCard("Dry Eff", schema.keyMetrics.dryEfficiency, "%")}
+    ${metricCard("Target", schema.recommendation.calorieTarget, " kcal")}
+  </div>
+
+  <div class="reason-list">
+    <div class="reason-item">
+      <strong>Experiment</strong>
+      <span class="note">${schema.experiment.title}</span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Do not do</strong>
+      <span class="note">${schema.summary.avoidAction}</span>
     </div>
   </div>
 </section>
