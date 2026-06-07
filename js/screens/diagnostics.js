@@ -28,6 +28,7 @@ export function renderDiagnostics(state) {
   compensation,
   dietFatigue,
   transition,
+  experiment,
   waterLoad,
   metabolicState,
   investigation,
@@ -186,6 +187,41 @@ export function renderDiagnostics(state) {
   <p class="note">
     <strong>Next best move:</strong> ${transition.nextBestMove}
   </p>
+</section>
+
+<section class="card">
+  <p class="eyebrow">Weekly experiment</p>
+  <h2>${experiment.title}</h2>
+  <p class="note"><strong>Hypothesis:</strong> ${experiment.hypothesis}</p>
+  <p class="note"><strong>Expected outcome:</strong> ${experiment.expectedOutcome}</p>
+
+  <div class="grid">
+    ${metricCard("Type", experiment.type, "")}
+    ${metricCard("Confidence", experiment.confidence, "")}
+  </div>
+
+  <div class="reason-list">
+    <div class="reason-item">
+      <strong>Protocol</strong>
+      <span class="note">
+        ${experiment.protocol.map(item => `• ${item}`).join("<br>")}
+      </span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Success criteria</strong>
+      <span class="note">
+        ${experiment.successCriteria.map(item => `• ${item}`).join("<br>")}
+      </span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Stop criteria</strong>
+      <span class="note">
+        ${experiment.stopCriteria.map(item => `• ${item}`).join("<br>")}
+      </span>
+    </div>
+  </div>
 </section>
 
     <section class="card">
