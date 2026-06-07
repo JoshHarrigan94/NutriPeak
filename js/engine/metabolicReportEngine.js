@@ -130,3 +130,4 @@ const learning = analysePersonalLearning(reportWithExperiment);
     ...reportWithResolution,
     schema
   };
+  }
