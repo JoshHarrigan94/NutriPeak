@@ -1,3 +1,4 @@
+import { resolveRecommendation } from "../resolution/recommendationResolver.js";
 import { analyseConfidence } from "../confidence/confidenceEngine.js";
 import { analysePersonalLearning } from "../learning/personalLearningEngine.js";
 import { analyseEnergyCompensation } from "../compensation/energyCompensationEngine.js";
@@ -109,7 +110,14 @@ const learning = analysePersonalLearning(reportWithExperiment);
 
   const confidence = analyseConfidence(reportWithLearning);
 
-  return {
+    const reportWithConfidence = {
     ...reportWithLearning,
     confidence
+  };
+
+  const resolution = resolveRecommendation(reportWithConfidence);
+
+  return {
+    ...reportWithConfidence,
+    resolution
   };
