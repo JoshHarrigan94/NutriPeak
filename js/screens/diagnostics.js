@@ -26,6 +26,7 @@ export function renderDiagnostics(state) {
   diagnostics,
   efficiency,
   compensation,
+  dietFatigue,
   waterLoad,
   metabolicState,
   investigation,
@@ -136,6 +137,28 @@ export function renderDiagnostics(state) {
   </div>
 
   <p class="note">${compensation.interpretation}</p>
+</section>
+
+<section class="card">
+  <p class="eyebrow">Diet fatigue</p>
+  <h2>${dietFatigue.label}</h2>
+  <p class="note">${dietFatigue.recommendation}</p>
+
+  <div class="grid">
+    ${metricCard("Fatigue", round(dietFatigue.fatigueScore), "%")}
+    ${metricCard("Diet Load", round(dietFatigue.dietLoad), "%")}
+    ${metricCard("Recovery Debt", round(dietFatigue.recoveryDebt), "%")}
+    ${metricCard("Collapse Risk", round(dietFatigue.adherenceCollapseRisk), "%")}
+  </div>
+
+  <div class="reason-list">
+    ${dietFatigue.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
 </section>
 
     <section class="card">
