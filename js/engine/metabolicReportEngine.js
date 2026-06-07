@@ -13,6 +13,7 @@ import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 import { analyseReviewHistory } from "../history/reviewHistory.js";
 import { analyseDietFatigue } from "../fatigue/dietFatigueEngine.js";
+import { analyseStateTransition } from "../transitions/stateTransitionEngine.js";
 export function generateMetabolicReport(state) {
   const metrics = calculateMetrics(state);
 
@@ -61,24 +62,31 @@ export function generateMetabolicReport(state) {
     state
   );
 
-  const reviewPattern = analyseReviewHistory(state.reviews || []);
+    const reviewPattern = analyseReviewHistory(state.reviews || []);
+
+  const report = {
+    state,
+    metrics,
+    quality,
+    noise,
+    waterLoad,
+    efficiency,
+    diagnostics,
+    compensation,
+    dietFatigue,
+    investigation,
+    metabolicState,
+    decision,
+    phase,
+    projection,
+    calorieAdjustment,
+    reviewPattern
+  };
+
+  const transition = analyseStateTransition(report);
 
   return {
-  state,
-  metrics,
-  quality,
-  noise,
-  waterLoad,
-  efficiency,
-  diagnostics,
-  compensation,
-  dietFatigue,
-  investigation,
-  metabolicState,
-  decision,
-  phase,
-  projection,
-  calorieAdjustment,
-  reviewPattern
-};
+    ...report,
+    transition
+  };
 }
