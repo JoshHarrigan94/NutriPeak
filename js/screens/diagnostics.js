@@ -37,6 +37,7 @@ export function renderDiagnostics(state) {
   noise,
   phase,
   calorieAdjustment,
+  confidence,
   projection
 } = report;
 
@@ -58,6 +59,32 @@ export function renderDiagnostics(state) {
         ${metricCard("Data Quality", quality.score, "%")}
       </div>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Confidence layer</p>
+  <h2>${confidence.overall.label} confidence</h2>
+  <p class="note">
+    Overall engine confidence: <strong>${confidence.overall.score}%</strong>.
+  </p>
+
+  <div class="grid">
+    ${metricCard("Maintenance", confidence.maintenance.score, "%")}
+    ${metricCard("Water", confidence.water.score, "%")}
+    ${metricCard("Efficiency", confidence.efficiency.score, "%")}
+    ${metricCard("State", confidence.state.score, "%")}
+    ${metricCard("Transition", confidence.transition.score, "%")}
+    ${metricCard("Learning", confidence.learning.score, "%")}
+  </div>
+
+  <div class="reason-list">
+    ${confidence.overall.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
+</section>
 
     <section class="card">
       <p class="eyebrow">Metabolic State Classification</p>
