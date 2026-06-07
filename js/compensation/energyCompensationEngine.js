@@ -1,3 +1,4 @@
+import { THRESHOLDS } from "../config/engineThresholds.js";
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));
 }
@@ -8,26 +9,26 @@ function evidence(condition, text) {
 
 export function analyseEnergyCompensation(metrics, diagnostics, efficiency, waterLoad) {
   const highActivity =
-    metrics.avgSteps >= 10000 ||
-    metrics.highStepDays >= 4;
+    metrics.avgSteps >= THRESHOLDS.steps.elevated ||
+    metrics.highStepDays >= THRESHOLDS.steps.frequentHighDays;
 
   const lowOutput =
-    diagnostics.rawEfficiency < 70;
+    diagnostics.rawEfficiency < THRESHOLDS.efficiency.low;
 
   const maskedOutput =
-    diagnostics.maskingGap >= 15 ||
+    diagnostics.maskingGap >= THRESHOLDS.efficiency.maskingGap ||
     waterLoad.estimatedWaterLoadKg >= 0.8;
 
   const largeDeficit =
-    metrics.estimatedDeficit >= 700;
+    metrics.estimatedDeficit >= THRESHOLDS.deficit.large;
 
   const compensationScore = clamp(
     (highActivity ? 22 : 0) +
     (largeDeficit ? 22 : 0) +
     (lowOutput ? 28 : 0) +
-    (metrics.lowSleepDays >= 3 ? 10 : 0) +
-    (metrics.highStressDays >= 3 ? 10 : 0) +
-    (metrics.avgAdherence < 90 ? 8 : 0)
+    (metrics.lowSleepDays >= THRESHOLDS.sleep.repeatedLowDays ? 10 : 0) +
+    (metrics.highStressDays >= THRESHOLDS.stress.repeatedHighDays ? 10 : 0) +
+    (metrics.avgAdherence < THRESHOLDS.adherence.drift ? 8 : 0)
   );
 
   const activityEfficiencyScore = clamp(
