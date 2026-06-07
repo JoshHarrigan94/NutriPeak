@@ -1,3 +1,4 @@
+import { runEngineScenarios } from "../testing/engineScenarioRunner.js";
  import { generateMetabolicReport } from "../engine/metabolicReportEngine.js";
 import { metricCard } from "../ui/cards.js";
 
@@ -20,7 +21,7 @@ function renderEvidence(items) {
 
 export function renderDiagnostics(state) {
   const report = generateMetabolicReport(state);
-
+  const scenarios = runEngineScenarios();
   const {
   metrics,
   diagnostics,
@@ -375,5 +376,31 @@ export function renderDiagnostics(state) {
         ${metricCard("Scale Noise", noise.label, "")}
       </div>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Engine scenario tests</p>
+  <h2>Scenario harness</h2>
+  <p class="note">
+    These synthetic cases check whether the engine behaves sensibly before UI polish.
+  </p>
+
+  <div class="reason-list">
+    ${scenarios.map(test => `
+      <div class="reason-item">
+        <strong>${test.title} · ${test.result.score}% pass</strong>
+        <span class="note">
+          State: ${test.summary.state}<br>
+          Action: ${test.summary.action}<br>
+          Experiment: ${test.summary.experiment}<br>
+          Confidence: ${test.summary.confidence}% · 
+          Dry Eff: ${test.summary.dryEfficiency}% · 
+          Water: ${test.summary.waterLoad}kg · 
+          Compensation: ${test.summary.compensation}% · 
+          Fatigue: ${test.summary.fatigue}%
+        </span>
+      </div>
+    `).join("")}
+  </div>
+</section>
   `;
 }
