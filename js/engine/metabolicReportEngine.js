@@ -14,6 +14,7 @@ import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 import { analyseReviewHistory } from "../history/reviewHistory.js";
 import { analyseDietFatigue } from "../fatigue/dietFatigueEngine.js";
 import { analyseStateTransition } from "../transitions/stateTransitionEngine.js";
+import { prescribeWeeklyExperiment } from "../experiments/weeklyExperimentEngine.js";
 export function generateMetabolicReport(state) {
   const metrics = calculateMetrics(state);
 
@@ -64,7 +65,7 @@ export function generateMetabolicReport(state) {
 
     const reviewPattern = analyseReviewHistory(state.reviews || []);
 
-  const report = {
+    const report = {
     state,
     metrics,
     quality,
@@ -85,8 +86,15 @@ export function generateMetabolicReport(state) {
 
   const transition = analyseStateTransition(report);
 
-  return {
+  const reportWithTransition = {
     ...report,
     transition
+  };
+
+  const experiment = prescribeWeeklyExperiment(reportWithTransition);
+
+  return {
+    ...reportWithTransition,
+    experiment
   };
 }
