@@ -27,20 +27,29 @@ export function analyseStateTransition(report) {
   const recent = reviews.slice(0, 4);
 
   if (!recent.length) {
-    return {
-      direction: "uncertain",
-      transitionLabel: "No transition history",
-      riskLevel: "Low",
-      score: 35,
-      summary:
-        "No saved reviews exist yet, so the engine can only classify the current state, not direction of travel.",
-      evidence: [
-        "Save weekly reviews to unlock transition analysis."
-      ],
-      nextBestMove:
-        "Save the current review after each weekly checkpoint."
-    };
-  }
+  return {
+    direction: "uncertain",
+    transitionLabel: "No transition history",
+    riskLevel: "Low",
+    score: 35,
+    summary:
+      "No saved reviews exist yet, so the engine can only classify the current state, not direction of travel.",
+    evidence: [
+      "Save weekly reviews to unlock transition analysis."
+    ],
+    nextBestMove:
+      "Save the current review after each weekly checkpoint.",
+    deltas: {
+      efficiencyDelta: 0,
+      fatigueDelta: 0,
+      qualityDelta: 0,
+      recentEfficiency: 0,
+      recentFatigue: 0,
+      recentQuality: 0,
+      recentMasking: 0
+    }
+  };
+}
 
   const recentEfficiency = average(recent.map(review => review.efficiency));
   const recentFatigue = average(recent.map(review => review.fatigueRisk));
