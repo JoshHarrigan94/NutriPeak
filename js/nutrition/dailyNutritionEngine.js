@@ -50,3 +50,105 @@ function finalise(totals) {
     sodium: round(totals.sodium)
   };
 }
+
+export function getDailyNutrition(date) {
+  const entries = getMealEntriesByDate(date);
+
+  const totals = entries.reduce(
+    (acc, entry) =>
+      addNutrition(acc, entry.nutrition),
+    createTotals()
+  );
+
+  return {
+    date,
+    entryCount: entries.length,
+    totals: finalise(totals)
+  };
+}
+
+export function getMealNutrition(date) {
+  const entries = getMealEntriesByDate(date);
+
+  const meals = {
+    breakfast: createTotals(),
+    lunch: createTotals(),
+    dinner: createTotals(),
+    snack: createTotals()
+  };
+
+  entries.forEach(entry => {
+    addNutrition(
+      meals[entry.mealType],
+      entry.nutrition
+    );
+  });
+
+  return {
+    breakfast: finalise(meals.breakfast),
+    lunch: finalise(meals.lunch),
+    dinner: finalise(meals.dinner),
+    snack: finalise(meals.snack)
+  };
+}
+
+export function getNutritionRange(
+  startDate,
+  endDate
+) {
+  const entries =
+    getMealEntriesByRange(
+      startDate,
+      endDate
+    );
+
+  const totals = entries.reduce(
+    (acc, entry) =>
+      addNutrition(acc, entry.nutrition),
+    createTotals()
+  );
+
+  return {
+    startDate,
+    endDate,
+    entryCount: entries.length,
+    totals: finalise(totals)
+  };
+}
+
+export function getAverageNutrition(
+  startDate,
+  endDate
+) {
+  const range =
+    getNutritionRange(
+      startDate,
+      endDate
+    );
+
+  const days =
+    Math.max(
+      1,
+      Math.round(
+        (
+          new Date(endDate) -
+          new Date(startDate)
+        ) /
+        86400000
+      ) + 1
+    );
+
+  const t = range.totals;
+
+  return {
+    calories: round(t.calories / days),
+    protein: round(t.protein / days),
+    carbs: round(t.carbs / days),
+    fat: round(t.fat / days),
+    fibre: round(t.fibre / days),
+    sugar: round(t.sugar / days),
+    saturatedFat: round(t.saturatedFat / days),
+    salt: round(t.salt / days),
+    sodium: round(t.sodium / days)
+  };
+}
