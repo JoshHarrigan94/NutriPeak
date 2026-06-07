@@ -1,3 +1,5 @@
+
+import { buildReportSchema } from "../schema/reportSchema.js";
 import { resolveRecommendation } from "../resolution/recommendationResolver.js";
 import { analyseConfidence } from "../confidence/confidenceEngine.js";
 import { analysePersonalLearning } from "../learning/personalLearningEngine.js";
@@ -117,7 +119,14 @@ const learning = analysePersonalLearning(reportWithExperiment);
 
   const resolution = resolveRecommendation(reportWithConfidence);
 
-  return {
+    const reportWithResolution = {
     ...reportWithConfidence,
     resolution
+  };
+
+  const schema = buildReportSchema(reportWithResolution);
+
+  return {
+    ...reportWithResolution,
+    schema
   };
