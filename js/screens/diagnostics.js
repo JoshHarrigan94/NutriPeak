@@ -38,6 +38,7 @@ export function renderDiagnostics(state) {
   phase,
   calorieAdjustment,
   confidence,
+  resolution,
   projection
 } = report;
 
@@ -75,6 +76,29 @@ export function renderDiagnostics(state) {
     ${metricCard("Transition", confidence.transition.score, "%")}
     ${metricCard("Learning", confidence.learning.score, "%")}
   </div>
+  
+  <section class="card">
+  <p class="eyebrow">Resolved recommendation</p>
+  <h2>${resolution.primaryAction}</h2>
+  <p class="note">${resolution.rationale}</p>
+
+  <div class="grid">
+    ${metricCard("Priority", resolution.priority, "")}
+    ${metricCard("Confidence", resolution.confidence, "")}
+  </div>
+
+  <div class="reason-list">
+    <div class="reason-item">
+      <strong>Supporting action</strong>
+      <span class="note">${resolution.supportingAction}</span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Do not do</strong>
+      <span class="note">${resolution.avoidAction}</span>
+    </div>
+  </div>
+</section>
 
   <div class="reason-list">
     ${confidence.overall.evidence.map(item => `
