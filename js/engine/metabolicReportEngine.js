@@ -1,3 +1,4 @@
+import { analysePersonalLearning } from "../learning/personalLearningEngine.js";
 import { analyseEnergyCompensation } from "../compensation/energyCompensationEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
 import { estimateWaterLoad } from "../water/waterLoadEngine.js";
@@ -93,8 +94,14 @@ export function generateMetabolicReport(state) {
 
   const experiment = prescribeWeeklyExperiment(reportWithTransition);
 
-  return {
-    ...reportWithTransition,
-    experiment
-  };
-}
+  const reportWithExperiment = {
+  ...reportWithTransition,
+  experiment
+};
+
+const learning = analysePersonalLearning(reportWithExperiment);
+
+return {
+  ...reportWithExperiment,
+  learning
+};
