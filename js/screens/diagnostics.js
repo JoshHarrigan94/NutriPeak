@@ -1,3 +1,4 @@
+import { runNutritionFoundationTests } from "../nutrition/nutritionFoundationTests.js";
 import { runEngineScenarios } from "../testing/engineScenarioRunner.js";
  import { generateMetabolicReport } from "../engine/metabolicReportEngine.js";
 import { metricCard } from "../ui/cards.js";
@@ -22,6 +23,7 @@ function renderEvidence(items) {
 export function renderDiagnostics(state) {
   const report = generateMetabolicReport(state);
   const scenarios = runEngineScenarios();
+  const nutritionTests = runNutritionFoundationTests();
   const {
   metrics,
   diagnostics,
@@ -376,6 +378,30 @@ export function renderDiagnostics(state) {
         ${metricCard("Scale Noise", noise.label, "")}
       </div>
     </section>
+    
+    <section class="card">
+  <p class="eyebrow">Nutrition foundation tests</p>
+  <h2>${nutritionTests.score}% pass</h2>
+  <p class="note">
+    These tests validate food search, serving maths, meal logging,
+    daily totals, budget tracking, energy balance and the coaching bridge.
+  </p>
+
+  <div class="grid">
+    ${metricCard("Passed", nutritionTests.passed, "")}
+    ${metricCard("Total", nutritionTests.total, "")}
+    ${metricCard("Score", nutritionTests.score, "%")}
+  </div>
+
+  <div class="reason-list">
+    ${nutritionTests.results.map(test => `
+      <div class="reason-item">
+        <strong>${test.pass ? "Pass" : "Fail"}</strong>
+        <span class="note">${test.label}</span>
+      </div>
+    `).join("")}
+  </div>
+</section>
     
     <section class="card">
   <p class="eyebrow">Engine scenario tests</p>
