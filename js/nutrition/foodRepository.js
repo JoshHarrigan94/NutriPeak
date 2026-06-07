@@ -1,7 +1,7 @@
 import { SEED_FOODS } from "./seedFoods.js";
 import { isValidFood } from "./foodSchema.js";
 import { mapCustomFood } from "./foodSources.js";
-
+import { FOOD_SOURCE } from "./foodSchema.js";
 const FOOD_KEY = "nutripeak-foods-v1";
 const RECENT_KEY = "nutripeak-recent-foods-v1";
 
@@ -17,6 +17,32 @@ function normaliseText(value = "") {
   return String(value)
     .toLowerCase()
     .trim();
+}
+
+function upsertCustomFood(food) {
+  const current = loadCustomFoods();
+
+  const existingById = current.find(item => item.id === food.id);
+  const existingByBarcode = food.barcode
+    ? current.find(item => item.barcode === food.barcode)
+    : null;
+
+  const next = current.filter(item =>
+    item.id !== food.id &&
+    item.barcode !== food.barcode
+  );
+
+  return [
+    {
+      ...food,
+      id: existingById?.id || existingByBarcode?.id || food.id,
+      metadata: {
+        ...(food.metadata || {}),
+        lastUpdated: new Date().toISOString()
+      }
+    },
+    ...next
+  ];
 }
 
 function scoreFood(food, query) {
