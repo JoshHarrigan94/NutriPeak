@@ -17,6 +17,7 @@ export function mapOpenFoodFactsProduct(product = {}) {
     kjToKcal(nutriments["energy_100g"]);
 
   const salt = nutriments["salt_100g"] || 0;
+
   const sodium = nutriments["sodium_100g"]
     ? Number(nutriments["sodium_100g"]) * 1000
     : sodiumFromSalt(salt);
@@ -75,7 +76,7 @@ export function mapCofidFood(row = {}) {
 
     nutritionPer100g: {
       calories: row.calories || row.energy_kcal || row.kcal,
-      protein: row protein || row.protein_g,
+      protein: row.protein || row.protein_g,
       carbs: row.carbs || row.carbohydrate_g,
       fat: row.fat || row.fat_g,
       fibre: row.fibre || row.fiber_g,
