@@ -11,14 +11,24 @@ function findExistingDailyEntry(state, date) {
   return (state.entries || []).find(entry => entry.date === date) || null;
 }
 
+function shouldUseNutritionValue(value) {
+  return Number.isFinite(Number(value)) && Number(value) > 0;
+}
+
 export function buildCoachingEntryFromNutrition({
   state,
   date = new Date().toISOString().slice(0, 10),
   metrics = null,
-  preserveManualFields = true
+  preserveManualFields = true,
+  requireFoodEntries = true
 }) {
   const existing = findExistingDailyEntry(state, date);
   const dailyNutrition = getDailyNutrition(date);
+
+  if (requireFoodEntries && dailyNutrition.entryCount === 0) {
+    return existing || null;
+  }
+
   const energyBalance = calculateDailyEnergyBalance({
     state,
     date,
@@ -31,12 +41,29 @@ export function buildCoachingEntryFromNutrition({
     id: existing?.id,
     date,
 
-    calories: round(totals.calories),
-    protein: round(totals.protein),
-    carbs: round(totals.carbs),
-    fat: round(totals.fat),
-    fibre: round(totals.fibre),
-    sodium: round(totals.sodium),
+    calories: shouldUseNutritionValue(totals.calories)
+      ? round(totals.calories)
+      : Number(existing?.calories || 0),
+
+    protein: shouldUseNutritionValue(totals.protein)
+      ? round(totals.protein)
+      : Number(existing?.protein || 0),
+
+    carbs: shouldUseNutritionValue(totals.carbs)
+      ? round(totals.carbs)
+      : Number(existing?.carbs || 0),
+
+    fat: shouldUseNutritionValue(totals.fat)
+      ? round(totals.fat)
+      : Number(existing?.fat || 0),
+
+    fibre: shouldUseNutritionValue(totals.fibre)
+      ? round(totals.fibre)
+      : Number(existing?.fibre || 0),
+
+    sodium: shouldUseNutritionValue(totals.sodium)
+      ? round(totals.sodium)
+      : Number(existing?.sodium || 0),
 
     weightKg: preserveManualFields
       ? Number(existing?.weightKg || 0)
@@ -86,7 +113,8 @@ export function buildCoachingEntriesFromNutritionRange({
   startDate,
   endDate,
   metrics = null,
-  preserveManualFields = true
+  preserveManualFields = true,
+  requireFoodEntries = true
 }) {
   const dates = [];
   const cursor = new Date(startDate);
@@ -97,14 +125,17 @@ export function buildCoachingEntriesFromNutritionRange({
     cursor.setDate(cursor.getDate() + 1);
   }
 
-  return dates.map(date =>
-    buildCoachingEntryFromNutrition({
-      state,
-      date,
-      metrics,
-      preserveManualFields
-    })
-  );
+  return dates
+    .map(date =>
+      buildCoachingEntryFromNutrition({
+        state,
+        date,
+        metrics,
+        preserveManualFields,
+        requireFoodEntries
+      })
+    )
+    .filter(Boolean);
 }
 
 export function mergeNutritionEntriesIntoState({
@@ -130,14 +161,18 @@ export function syncNutritionDayToCoachingState({
   state,
   date = new Date().toISOString().slice(0, 10),
   metrics = null,
-  preserveManualFields = true
+  preserveManualFields = true,
+  requireFoodEntries = true
 }) {
   const entry = buildCoachingEntryFromNutrition({
     state,
     date,
     metrics,
-    preserveManualFields
+    preserveManualFields,
+    requireFoodEntries
   });
+
+  if (!entry) return state;
 
   return mergeNutritionEntriesIntoState({
     state,
@@ -150,15 +185,19 @@ export function syncNutritionRangeToCoachingState({
   startDate,
   endDate,
   metrics = null,
-  preserveManualFields = true
+  preserveManualFields = true,
+  requireFoodEntries = true
 }) {
   const entries = buildCoachingEntriesFromNutritionRange({
     state,
     startDate,
     endDate,
     metrics,
-    preserveManualFields
+    preserveManualFields,
+    requireFoodEntries
   });
+
+  if (!entries.length) return state;
 
   return mergeNutritionEntriesIntoState({
     state,
