@@ -1,3 +1,4 @@
+import { THRESHOLDS } from "../config/engineThresholds.js";
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));
 }
@@ -29,24 +30,24 @@ const maskingGap =
   efficiencyModel?.maskingGap ?? 0;
 
   const deficitPressure =
-    metrics.estimatedDeficit > 900 ? 24 :
-    metrics.estimatedDeficit > 700 ? 18 :
-    metrics.estimatedDeficit > 500 ? 10 :
+    metrics.estimatedDeficit > THRESHOLDS.deficit.aggressive ? 24 :
+    metrics.estimatedDeficit > THRESHOLDS.deficit.large ? 18 :
+    metrics.estimatedDeficit > THRESHOLDS.deficit.moderate ? 10 :
     4;
 
   const lowCaloriesPressure = clamp(metrics.lowCalorieDays * 7);
   const highStepsPressure = clamp(metrics.highStepDays * 6);
 
   const maintenanceSuppressionPressure =
-    metrics.adaptiveMaintenance?.delta <= -500 ? 24 :
-    metrics.adaptiveMaintenance?.delta <= -300 ? 16 :
+    metrics.adaptiveMaintenance?.delta <= THRESHOLDS.maintenance.majorSuppression ? 24 :
+    metrics.adaptiveMaintenance?.delta <= THRESHOLDS.maintenance.meaningfulSuppression ? 16 :
     metrics.adaptiveMaintenance?.delta <= -150 ? 8 :
     0;
 
   const poorOutputPressure =
-    efficiency < 45 ? 35 :
-    efficiency < 70 ? 22 :
-    efficiency < 90 ? 10 :
+    efficiency < THRESHOLDS.efficiency.poor ? 35 :
+    efficiency < THRESHOLDS.efficiency.low? 22 :
+    efficiency < THRESHOLDS.efficiency.strong ? 10 :
     0;
 
   const adaptationRisk = clamp(
@@ -70,8 +71,8 @@ const maskingGap =
   );
 
   const retentionRisk = clamp(
-  (rawEfficiency < 70 ? 30 : 8) +
-  (maskingGap >= 15 ? 20 : 0) +
+  (rawEfficiency < THRESHOLDS.efficiency.low ? 30 : 8) +
+  (maskingGap >= THRESHOLDS.efficiency.maskingGap ? 20 : 0) +
   (metrics.highStepDays >= 4 ? 14 : 0) +
   (metrics.lowCalorieDays >= 4 ? 10 : 0) +
   (metrics.highSodiumDays >= 2 ? 10 : 0) +
@@ -81,7 +82,7 @@ const maskingGap =
   let status = "good";
   let label = "Strategy working";
 
-  if (metrics.daysLogged < 7) {
+  if (metrics.daysLogged < THRESHOLDS.data.minimumDays) {
     status = "warn";
     label = "Baseline needed";
   } else if (efficiency < 45 && fatigueRisk >= 55) {
