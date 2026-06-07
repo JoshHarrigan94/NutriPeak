@@ -29,6 +29,7 @@ export function renderDiagnostics(state) {
   dietFatigue,
   transition,
   experiment,
+  learning,
   waterLoad,
   metabolicState,
   investigation,
@@ -219,6 +220,50 @@ export function renderDiagnostics(state) {
       <strong>Stop criteria</strong>
       <span class="note">
         ${experiment.stopCriteria.map(item => `• ${item}`).join("<br>")}
+      </span>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <p class="eyebrow">Personal learning</p>
+  <h2>Learning confidence: ${learning.confidence}</h2>
+  <p class="note">${learning.summary}</p>
+
+  <div class="grid">
+    ${metricCard("Confidence", learning.confidenceScore, "%")}
+    ${metricCard("Calories", learning.learnedProfile.calorieRange, "")}
+    ${metricCard("Fatigue Sens.", learning.learnedProfile.fatigueSensitivity, "")}
+    ${metricCard("Activity Sens.", learning.learnedProfile.activitySensitivity, "")}
+  </div>
+
+  <div class="reason-list">
+    <div class="reason-item">
+      <strong>Best signals</strong>
+      <span class="note">
+        ${learning.bestSignals.map(item =>
+          `• ${item.title}: ${item.body}`
+        ).join("<br>")}
+      </span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Risk patterns</strong>
+      <span class="note">
+        ${
+          learning.riskPatterns.length
+            ? learning.riskPatterns.map(item =>
+                `• ${item.title}: ${item.body}`
+              ).join("<br>")
+            : "• No strong personal risk pattern yet."
+        }
+      </span>
+    </div>
+
+    <div class="reason-item">
+      <strong>Recommendations</strong>
+      <span class="note">
+        ${learning.recommendations.map(item => `• ${item}`).join("<br>")}
       </span>
     </div>
   </div>
