@@ -1,3 +1,5 @@
+import { THRESHOLDS } from "../config/engineThresholds.js";
+
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));
 }
@@ -7,18 +9,18 @@ function evidence(condition, text) {
 }
 
 export function analyseDietFatigue(metrics, diagnostics, compensation) {
-  const aggressiveDeficit = metrics.estimatedDeficit >= 700;
-  const veryAggressiveDeficit = metrics.estimatedDeficit >= 950;
+  const aggressiveDeficit = metrics.estimatedDeficit >= THRESHOLDS.deficit.large;
+  const veryAggressiveDeficit = metrics.estimatedDeficit >= THRESHOLDS.deficit.veryAggressive;
 
   const longDietWindow = metrics.daysLogged >= 21;
-  const lowSleep = metrics.lowSleepDays >= 3;
-  const highStress = metrics.highStressDays >= 3;
-  const highSoreness = metrics.highSorenessDays >= 2;
+  const lowSleep = metrics.lowSleepDays >= THRESHOLDS.sleep.repeatedLowDays;
+  const highStress = metrics.highStressDays >= THRESHOLDS.stress.repeatedHighDays;
+  const highSoreness = metrics.highSorenessDays >= THRESHOLDS.soreness.repeatedHighDays;
   const lowProtein = metrics.lowProteinDays >= 3;
   const lowFibre = metrics.lowFibreDays >= 3;
-  const highActivity = metrics.highStepDays >= 4;
-  const adherenceDrift = metrics.avgAdherence < 90;
-  const poorAdherence = metrics.avgAdherence < 80;
+  const highActivity = metrics.highStepDays >= THRESHOLDS.steps.frequentHighDays;
+  const adherenceDrift = metrics.avgAdherence < THRESHOLDS.adherence.drift;
+  const poorAdherence = metrics.avgAdherence < THRESHOLDS.adherence.poor;
 
   const recoveryDebt = clamp(
     (lowSleep ? 24 : 0) +
