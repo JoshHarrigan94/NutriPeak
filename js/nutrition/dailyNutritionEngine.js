@@ -1,7 +1,7 @@
 import {
   getMealEntriesByDate,
   getMealEntriesByRange
-} from "../meals/mealLogStore.js";
+} from "../meal/mealLogStore.js";
 
 function round(value, dp = 1) {
   return Number.isFinite(value)
