@@ -12,7 +12,7 @@ import { calculateProjection } from "../projections/projectionEngine.js";
 import { getCalorieAdjustment } from "../calories/calorieAdjustmentEngine.js";
 import { classifyMetabolicState } from "../stateEngine/metabolicStateEngine.js";
 import { analyseReviewHistory } from "../history/reviewHistory.js";
-
+import { analyseDietFatigue } from "../fatigue/dietFatigueEngine.js";
 export function generateMetabolicReport(state) {
   const metrics = calculateMetrics(state);
 
@@ -27,6 +27,12 @@ export function generateMetabolicReport(state) {
   diagnostics,
   efficiency,
   waterLoad
+);
+
+  const dietFatigue = analyseDietFatigue(
+  metrics,
+  diagnostics,
+  compensation
 );
   const investigation = investigateStall(metrics, diagnostics);
 
@@ -66,6 +72,7 @@ export function generateMetabolicReport(state) {
   efficiency,
   diagnostics,
   compensation,
+  dietFatigue,
   investigation,
   metabolicState,
   decision,
