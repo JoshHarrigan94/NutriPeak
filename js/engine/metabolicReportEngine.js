@@ -1,3 +1,4 @@
+import { analyseConfidence } from "../confidence/confidenceEngine.js";
 import { analysePersonalLearning } from "../learning/personalLearningEngine.js";
 import { analyseEnergyCompensation } from "../compensation/energyCompensationEngine.js";
 import { calculateMetrics } from "../metrics/coreMetrics.js";
@@ -101,7 +102,14 @@ export function generateMetabolicReport(state) {
 
 const learning = analysePersonalLearning(reportWithExperiment);
 
-return {
-  ...reportWithExperiment,
-  learning
-};
+  const reportWithLearning = {
+    ...reportWithExperiment,
+    learning
+  };
+
+  const confidence = analyseConfidence(reportWithLearning);
+
+  return {
+    ...reportWithLearning,
+    confidence
+  };
