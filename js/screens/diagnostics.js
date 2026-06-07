@@ -27,6 +27,7 @@ export function renderDiagnostics(state) {
   efficiency,
   compensation,
   dietFatigue,
+  transition,
   waterLoad,
   metabolicState,
   investigation,
@@ -159,6 +160,32 @@ export function renderDiagnostics(state) {
       </div>
     `).join("")}
   </div>
+</section>
+
+<section class="card">
+  <p class="eyebrow">State transition</p>
+  <h2>${transition.transitionLabel}</h2>
+  <p class="note">${transition.summary}</p>
+
+  <div class="grid">
+    ${metricCard("Direction", transition.direction, "")}
+    ${metricCard("Risk", transition.riskLevel, "")}
+    ${metricCard("Score", round(transition.score), "%")}
+    ${metricCard("Eff Delta", round(transition.deltas.efficiencyDelta), "%")}
+  </div>
+
+  <div class="reason-list">
+    ${transition.evidence.map(item => `
+      <div class="reason-item">
+        <strong>Evidence</strong>
+        <span class="note">${item}</span>
+      </div>
+    `).join("")}
+  </div>
+
+  <p class="note">
+    <strong>Next best move:</strong> ${transition.nextBestMove}
+  </p>
 </section>
 
     <section class="card">
