@@ -108,22 +108,20 @@ export function getFoodByBarcode(barcode) {
 }
 
 export function addCustomFood(input) {
-  const food = mapCustomFood(input);
+  const food =
+    input.source && input.source !== FOOD_SOURCE.CUSTOM
+      ? input
+      : mapCustomFood(input);
 
   if (!isValidFood(food)) {
     throw new Error("Invalid food. Name and calories are required.");
   }
 
-  const current = loadCustomFoods();
-
-  const next = [
-    food,
-    ...current.filter(item => item.id !== food.id)
-  ];
+  const next = upsertCustomFood(food);
 
   saveCustomFoods(next);
 
-  return food;
+  return next[0];
 }
 
 export function deleteCustomFood(id) {
