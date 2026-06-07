@@ -1,7 +1,7 @@
 import { SEED_FOODS } from "./seedFoods.js";
 import { calculateNutritionForServing } from "./servingEngine.js";
 import { searchFoods, getFoodById } from "./foodRepository.js";
-import { addMealEntry, getMealEntriesByDate, clearMealEntriesForDate } from "../meals/mealLogStore.js";
+import { addMealEntry, getMealEntriesByDate, clearMealEntriesForDate } from "../meal/mealLogStore.js";
 import { getDailyNutrition } from "./dailyNutritionEngine.js";
 import { buildNutritionBudget } from "./nutritionTargetEngine.js";
 import { calculateDailyEnergyBalance } from "./energyBalanceEngine.js";
